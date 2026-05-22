@@ -88,8 +88,8 @@ export function InvoicePreview({ invoice, darkPrint = false }: InvoicePreviewPro
 
       {/* ── HEADER BAND ─────────────────────────────────────────────────── */}
       <div style={{ background: C.dark, padding: '40px 52px 32px', borderBottom: `3px solid ${C.lime}`, position: 'relative', overflow: 'hidden' }}>
-        {/* "INV" watermark */}
-        <div style={{ position: 'absolute', right: -8, top: -16, fontFamily: syne, fontSize: 140, fontWeight: 800, color: 'rgba(170,219,30,0.055)', lineHeight: 1, letterSpacing: -4, pointerEvents: 'none', userSelect: 'none' }}>
+        {/* "INV" watermark — hidden in light print via .inv-watermark CSS class */}
+        <div className="inv-watermark" style={{ position: 'absolute', right: -8, top: -16, fontFamily: syne, fontSize: 140, fontWeight: 800, color: 'rgba(170,219,30,0.055)', lineHeight: 1, letterSpacing: -4, pointerEvents: 'none', userSelect: 'none' }}>
           INV
         </div>
 

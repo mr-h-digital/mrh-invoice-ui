@@ -114,45 +114,46 @@
     display: none !important;
   }
 
-  /* ── Dark print (default — keeps the branded dark theme) ── */
+  /* Force all backgrounds and colours to actually print */
+  .invoice-preview {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── Dark print (default) — preserve brand colours ── */
   body {
     background: #0F1013 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  .invoice-preview.dark-print,
-  .invoice-preview:not(.dark-print) {
-    /* Force backgrounds & colours to print */
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  /* Hide the "INV" watermark in dark print too — it doesn't reproduce
+     well at print resolution and can bleed over text on some printers */
+  .inv-watermark {
+    display: none !important;
   }
 
   /* ── Light print override ── */
   .invoice-preview:not(.dark-print) {
     background: #ffffff !important;
-    color: #111 !important;
+    color: #111827 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
   }
 
-  /* Reset all nested colours/backgrounds in light mode */
-  .invoice-preview:not(.dark-print) div,
+  /* Cascade text/border reset for light mode — excludes the watermark
+     (already hidden) so it can't bleed through as solid black */
+  .invoice-preview:not(.dark-print) div:not(.inv-watermark),
   .invoice-preview:not(.dark-print) p,
-  .invoice-preview:not(.dark-print) span,
-  .invoice-preview:not(.dark-print) td,
-  .invoice-preview:not(.dark-print) th {
-    color: #111 !important;
+  .invoice-preview:not(.dark-print) span {
+    color: #111827 !important;
     background-color: transparent !important;
     border-color: #d1d5db !important;
   }
 
-  /* Keep the lime total block readable in light mode */
-  .invoice-preview:not(.dark-print) .total-lime-block {
-    background: #AADB1E !important;
-    color: #0F1013 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  /* Keep lime section labels legible in light mode */
+  .invoice-preview:not(.dark-print) .inv-section-label {
+    color: #5a7a00 !important;
   }
 
   #invoice-print-area {
