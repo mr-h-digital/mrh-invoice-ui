@@ -114,20 +114,45 @@
     display: none !important;
   }
 
+  /* ── Dark print (default — keeps the branded dark theme) ── */
   body {
-    background: white !important;
-    color: black !important;
+    background: #0F1013 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
+  .invoice-preview.dark-print,
   .invoice-preview:not(.dark-print) {
-    background: white !important;
-    color: #111 !important;
+    /* Force backgrounds & colours to print */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  .invoice-preview:not(.dark-print) * {
-    color: inherit !important;
-    border-color: #e5e7eb !important;
+  /* ── Light print override ── */
+  .invoice-preview:not(.dark-print) {
+    background: #ffffff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Reset all nested colours/backgrounds in light mode */
+  .invoice-preview:not(.dark-print) div,
+  .invoice-preview:not(.dark-print) p,
+  .invoice-preview:not(.dark-print) span,
+  .invoice-preview:not(.dark-print) td,
+  .invoice-preview:not(.dark-print) th {
+    color: #111 !important;
     background-color: transparent !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Keep the lime total block readable in light mode */
+  .invoice-preview:not(.dark-print) .total-lime-block {
+    background: #AADB1E !important;
+    color: #0F1013 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   #invoice-print-area {
@@ -136,6 +161,6 @@
   }
 
   @page {
-    margin: 16mm;
+    margin: 10mm;
   }
 }

@@ -26,490 +26,270 @@ const STATUS_COLOR: Record<string, string> = {
   overdue: '#EF4444',
 };
 
+// ─── Shared token values ───────────────────────────────────────────────────
+const C = {
+  dark:    '#0F1013',
+  charcoal:'#16181D',
+  card:    '#1E2128',
+  border:  '#2E333D',
+  muted:   '#5A6478',
+  text:    '#B8C4D4',
+  white:   '#E8EDF5',
+  lime:    '#AADB1E',
+  limeDk:  '#8AB818',
+  red:     '#EF4444',
+};
+
+const mono = "'Space Mono', monospace";
+const syne = "'Syne', sans-serif";
+const sans = "'DM Sans', sans-serif";
+
+// ─── Tiny helpers ─────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <p style={{ fontFamily: mono, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase' as const, color: C.lime, marginBottom: 12, margin: '0 0 12px' }}>
+      {children}
+    </p>
+  );
+}
+
+function TotalsRow({ label, value, color = C.text, borderBottom = true }: { label: string; value: string; color?: string; borderBottom?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: borderBottom ? `1px solid rgba(46,50,61,0.6)` : 'none' }}>
+      <span style={{ fontFamily: sans, fontSize: 13, color: C.muted }}>{label}</span>
+      <span style={{ fontFamily: mono, fontSize: 13, color }}>{value}</span>
+    </div>
+  );
+}
+
+function PaymentLine({ label, value }: { label: string; value: string }) {
+  if (!value) return null;
+  return (
+    <div style={{ display: 'flex', gap: 8, fontFamily: sans, fontSize: 13, color: C.muted, marginBottom: 6 }}>
+      <strong style={{ color: C.white, fontWeight: 500, minWidth: 90, flexShrink: 0 }}>{label}</strong>
+      {value}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 export function InvoicePreview({ invoice, darkPrint = false }: InvoicePreviewProps) {
-  const snap = invoice.clientSnapshot;
-  const items = invoice.lineItems ?? [];
+  const snap   = invoice.clientSnapshot;
+  const items  = invoice.lineItems ?? [];
   const subtotal = invoice.subtotal ?? items.reduce((s, i) => s + (i.amount ?? 0), 0);
+  const statusColor = invoice.status ? STATUS_COLOR[invoice.status] : C.muted;
+  const statusLabel = invoice.status ? STATUS_LABEL[invoice.status] : '';
 
   return (
     <div
-      className={`invoice-preview rounded-xl overflow-hidden text-sm ${
-        darkPrint ? 'dark-print' : ''
-      }`}
-      style={{
-        background: '#1E2128',
-        color: '#B8C4D4',
-        fontFamily: "'DM Sans', sans-serif",
-        minWidth: 0,
-      }}
+      className={`invoice-preview${darkPrint ? ' dark-print' : ''}`}
+      style={{ background: C.charcoal, color: C.text, fontFamily: sans, borderRadius: 14, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.55), 0 0 0 1px #2E333D' }}
     >
-      {/* Header */}
-      <div style={{ background: '#16181D', padding: '32px 32px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img
-              src={logoGreen}
-              alt="Mr. H Digital"
-              style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
-            />
-            <div>
-              <p
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontWeight: 700,
-                  color: '#E8EDF5',
-                  fontSize: 16,
-                  margin: 0,
-                }}
-              >
-                Mr. H Digital
-              </p>
-              <p style={{ color: '#5A6478', fontSize: 11, margin: 0 }}>
-                Custom websites & digital products
-              </p>
-            </div>
-          </div>
 
+      {/* ── HEADER BAND ─────────────────────────────────────────────────── */}
+      <div style={{ background: C.dark, padding: '40px 52px 32px', borderBottom: `3px solid ${C.lime}`, position: 'relative', overflow: 'hidden' }}>
+        {/* "INV" watermark */}
+        <div style={{ position: 'absolute', right: -8, top: -16, fontFamily: syne, fontSize: 140, fontWeight: 800, color: 'rgba(170,219,30,0.055)', lineHeight: 1, letterSpacing: -4, pointerEvents: 'none', userSelect: 'none' }}>
+          INV
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0 40px', alignItems: 'start', position: 'relative', zIndex: 1 }}>
+          {/* Logo */}
+          <img src={logoGreen} alt="Mr. H Digital" style={{ height: 68, width: 'auto', display: 'block' }} />
+
+          {/* Meta */}
           <div style={{ textAlign: 'right' }}>
-            <p
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 20,
-                fontWeight: 700,
-                color: '#E8EDF5',
-                margin: 0,
-              }}
-            >
+            <p style={{ fontFamily: mono, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.lime, margin: '0 0 6px' }}>
+              Tax Invoice
+            </p>
+            <p style={{ fontFamily: syne, fontSize: 30, fontWeight: 800, color: C.white, lineHeight: 1, letterSpacing: -0.5, margin: '0 0 14px' }}>
               {invoice.invoiceNumber || 'INV-XXXX-XXX'}
             </p>
             {invoice.status && (
-              <span
-                style={{
-                  display: 'inline-block',
-                  padding: '2px 10px',
-                  borderRadius: 999,
-                  fontSize: 10,
-                  fontFamily: "'Space Mono', monospace",
-                  background: STATUS_COLOR[invoice.status] + '22',
-                  color: STATUS_COLOR[invoice.status],
-                  border: `1px solid ${STATUS_COLOR[invoice.status]}44`,
-                  marginTop: 4,
-                }}
-              >
-                {STATUS_LABEL[invoice.status]}
+              <span style={{ display: 'inline-block', background: `${statusColor}22`, border: `1px solid ${statusColor}44`, color: statusColor, fontFamily: mono, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 4 }}>
+                {statusLabel}
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Billed from / to + dates */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: 24,
-          padding: '24px 32px',
-          borderBottom: '1px solid #2E333D',
-        }}
-      >
-        <div>
-          <p
-            style={{
-              fontFamily: "'Space Mono', monospace",
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              color: '#5A6478',
-              textTransform: 'uppercase',
-              marginBottom: 8,
-            }}
-          >
-            From
-          </p>
-          <p style={{ color: '#AADB1E', fontWeight: 600, margin: '0 0 2px' }}>Mr. H Digital</p>
-          <p style={{ color: '#B8C4D4', margin: '0 0 2px', fontSize: 12 }}>Lee Hildebrandt</p>
-          <p style={{ color: '#5A6478', margin: '0 0 2px', fontSize: 11 }}>info@mrhdigital.co.za</p>
-          <p style={{ color: '#5A6478', margin: '0 0 2px', fontSize: 11 }}>+27 76 687 1671</p>
-          <p style={{ color: '#5A6478', margin: 0, fontSize: 11 }}>Cape Town, South Africa</p>
+      {/* ── PARTIES ──────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${C.border}` }}>
+        {/* Billed From */}
+        <div style={{ padding: '32px 52px', borderRight: `1px solid ${C.border}` }}>
+          <SectionLabel>Billed From</SectionLabel>
+          <p style={{ fontFamily: syne, fontSize: 16, fontWeight: 700, color: C.white, margin: '0 0 8px', lineHeight: 1.3 }}>Mr. H Digital</p>
+          <div style={{ fontFamily: sans, fontSize: 13, color: C.muted, lineHeight: 1.8 }}>
+            Lee Hildebrandt<br />
+            Cape Town, South Africa<br />
+            <span style={{ color: C.lime }}>info@mrhdigital.co.za</span><br />
+            <span style={{ color: C.lime }}>mrhdigital.co.za</span><br />
+            +27 76 687 1671
+          </div>
         </div>
 
-        <div>
-          <p
-            style={{
-              fontFamily: "'Space Mono', monospace",
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              color: '#5A6478',
-              textTransform: 'uppercase',
-              marginBottom: 8,
-            }}
-          >
-            Billed To
-          </p>
+        {/* Billed To */}
+        <div style={{ padding: '32px 52px' }}>
+          <SectionLabel>Billed To</SectionLabel>
           {snap ? (
             <>
-              <p style={{ color: '#E8EDF5', fontWeight: 600, margin: '0 0 2px' }}>
+              <p style={{ fontFamily: syne, fontSize: 16, fontWeight: 700, color: C.white, margin: '0 0 8px', lineHeight: 1.3 }}>
                 {snap.companyName || '—'}
               </p>
-              {snap.contactName && (
-                <p style={{ color: '#B8C4D4', margin: '0 0 2px', fontSize: 12 }}>{snap.contactName}</p>
-              )}
-              {snap.email && (
-                <p style={{ color: '#5A6478', margin: '0 0 2px', fontSize: 11 }}>{snap.email}</p>
-              )}
-              {snap.phone && (
-                <p style={{ color: '#5A6478', margin: '0 0 2px', fontSize: 11 }}>{snap.phone}</p>
-              )}
-              {snap.address && (
-                <p style={{ color: '#5A6478', margin: 0, fontSize: 11, whiteSpace: 'pre-line' }}>
-                  {snap.address}
-                </p>
-              )}
+              <div style={{ fontFamily: sans, fontSize: 13, color: C.muted, lineHeight: 1.8 }}>
+                {snap.contactName && <>{snap.contactName}<br /></>}
+                {snap.address && <>{snap.address}<br /></>}
+                {snap.email && <><span style={{ color: C.lime }}>{snap.email}</span><br /></>}
+                {snap.phone && <>{snap.phone}</>}
+              </div>
             </>
           ) : (
-            <p style={{ color: '#5A6478', fontStyle: 'italic' }}>No client selected</p>
+            <p style={{ color: C.muted, fontStyle: 'italic', margin: 0 }}>No client selected</p>
           )}
         </div>
+      </div>
 
-        <div>
-          <p
-            style={{
-              fontFamily: "'Space Mono', monospace",
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              color: '#5A6478',
-              textTransform: 'uppercase',
-              marginBottom: 8,
-            }}
-          >
-            Dates
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div>
-              <p style={{ color: '#5A6478', fontSize: 10, margin: '0 0 1px' }}>Invoice Date</p>
-              <p
-                style={{
-                  fontFamily: "'Space Mono', monospace",
-                  color: '#B8C4D4',
-                  fontSize: 11,
-                  margin: 0,
-                }}
-              >
-                {invoice.issueDate ? formatDate(invoice.issueDate) : '—'}
-              </p>
-            </div>
-            <div>
-              <p style={{ color: '#5A6478', fontSize: 10, margin: '0 0 1px' }}>Due Date</p>
-              <p
-                style={{
-                  fontFamily: "'Space Mono', monospace",
-                  color: '#B8C4D4',
-                  fontSize: 11,
-                  margin: 0,
-                }}
-              >
-                {invoice.dueDate ? formatDate(invoice.dueDate) : '—'}
-              </p>
-            </div>
+      {/* ── DATE STRIP ───────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(0,0,0,0.18)', borderBottom: `1px solid ${C.border}` }}>
+        {[
+          { label: 'Invoice Date', value: invoice.issueDate ? formatDate(invoice.issueDate) : '—' },
+          { label: 'Payment Due',  value: invoice.dueDate   ? formatDate(invoice.dueDate)   : '—' },
+          { label: 'Reference',    value: invoice.paymentDetails?.reference || invoice.invoiceNumber || '—' },
+        ].map(({ label, value }, i) => (
+          <div key={label} style={{ padding: '18px 52px', borderRight: i < 2 ? `1px solid ${C.border}` : 'none' }}>
+            <p style={{ fontFamily: mono, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: C.muted, margin: '0 0 5px' }}>{label}</p>
+            <p style={{ fontFamily: syne, fontSize: 14, fontWeight: 600, color: C.white, margin: 0 }}>{value}</p>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Line items */}
-      <div style={{ padding: '24px 32px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr
-              style={{
-                borderBottom: '1px solid #2E333D',
-              }}
-            >
-              {['Description', 'Qty', 'Unit Price', 'Amount'].map((h, i) => (
-                <th
-                  key={h}
-                  style={{
-                    fontFamily: "'Space Mono', monospace",
-                    fontSize: 9,
-                    letterSpacing: '0.08em',
-                    color: '#5A6478',
-                    textTransform: 'uppercase',
-                    fontWeight: 400,
-                    textAlign: i === 0 ? 'left' : 'right',
-                    paddingBottom: 8,
-                    paddingLeft: i === 0 ? 0 : 8,
-                    paddingRight: i === 3 ? 0 : 8,
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  style={{ textAlign: 'center', color: '#5A6478', padding: '24px 0', fontStyle: 'italic' }}
-                >
-                  No line items yet
-                </td>
-              </tr>
-            ) : (
-              items.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  style={{
-                    background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.025)',
-                  }}
-                >
-                  <td style={{ padding: '10px 8px 10px 0' }}>
-                    <p style={{ color: '#E8EDF5', margin: '0 0 2px', fontWeight: 500 }}>
-                      {item.name}
-                    </p>
-                    {item.description && (
-                      <p style={{ color: '#5A6478', fontSize: 11, margin: 0 }}>{item.description}</p>
-                    )}
-                  </td>
-                  <td
-                    style={{
-                      textAlign: 'right',
-                      fontFamily: "'Space Mono', monospace",
-                      color: '#B8C4D4',
-                      padding: '10px 8px',
-                      fontSize: 12,
-                    }}
-                  >
-                    {item.quantity}
-                  </td>
-                  <td
-                    style={{
-                      textAlign: 'right',
-                      fontFamily: "'Space Mono', monospace",
-                      color: '#B8C4D4',
-                      padding: '10px 8px',
-                      fontSize: 12,
-                    }}
-                  >
-                    {formatCurrency(item.unitPrice)}
-                  </td>
-                  <td
-                    style={{
-                      textAlign: 'right',
-                      fontFamily: "'Space Mono', monospace",
-                      color: '#E8EDF5',
-                      padding: '10px 0 10px 8px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {formatCurrency(item.amount)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Totals */}
-      <div
-        style={{
-          padding: '0 32px 24px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <div style={{ minWidth: 240 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '6px 0',
-              borderBottom: '1px solid #2E333D',
-            }}
-          >
-            <span style={{ color: '#5A6478', fontSize: 12 }}>Subtotal</span>
-            <span
-              style={{ fontFamily: "'Space Mono', monospace", color: '#B8C4D4', fontSize: 12 }}
-            >
-              {formatCurrency(subtotal)}
+      {/* ── LINE ITEMS ───────────────────────────────────────────────────── */}
+      <div style={{ padding: '0 52px' }}>
+        {/* Column headers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 72px 110px 120px', gap: 12, padding: '18px 0 10px', borderBottom: `1px solid ${C.border}` }}>
+          {['Description', 'Qty', 'Unit Price', 'Amount'].map((h, i) => (
+            <span key={h} style={{ fontFamily: mono, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: C.muted, textAlign: i === 0 ? 'left' : 'right' }}>
+              {h}
             </span>
-          </div>
+          ))}
+        </div>
+
+        {items.length === 0 ? (
+          <p style={{ textAlign: 'center', color: C.muted, fontStyle: 'italic', padding: '24px 0', margin: 0 }}>No line items yet</p>
+        ) : (
+          items.map((item, idx) => {
+            const even = idx % 2 !== 0;
+            return (
+              <div
+                key={item.id}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 72px 110px 120px',
+                  gap: 12,
+                  padding: even ? '14px 52px' : '14px 0',
+                  margin: even ? '0 -52px' : '0',
+                  borderBottom: `1px solid rgba(46,50,61,0.5)`,
+                  background: even ? 'rgba(255,255,255,0.018)' : 'transparent',
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <p style={{ fontFamily: sans, fontSize: 13, fontWeight: 500, color: C.white, margin: '0 0 3px' }}>{item.name}</p>
+                  {item.description && (
+                    <p style={{ fontFamily: sans, fontSize: 11, color: C.muted, fontStyle: 'italic', lineHeight: 1.5, margin: 0 }}>{item.description}</p>
+                  )}
+                </div>
+                <span style={{ fontFamily: mono, fontSize: 12, color: C.muted, textAlign: 'center' }}>{item.quantity}</span>
+                <span style={{ fontFamily: mono, fontSize: 12, color: C.text, textAlign: 'right' }}>{formatCurrency(item.unitPrice)}</span>
+                <span style={{ fontFamily: mono, fontSize: 12, color: C.white, fontWeight: 600, textAlign: 'right' }}>{formatCurrency(item.amount)}</span>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ── TOTALS ───────────────────────────────────────────────────────── */}
+      <div style={{ padding: '4px 52px 32px', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ width: 300 }}>
+          <TotalsRow label="Subtotal" value={formatCurrency(subtotal)} />
 
           {(invoice.discountAmount ?? 0) > 0 && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '6px 0',
-                borderBottom: '1px solid #2E333D',
-              }}
-            >
-              <span style={{ color: '#5A6478', fontSize: 12 }}>
-                Discount
-                {invoice.discountType === 'percent' ? ` (${invoice.discountValue}%)` : ''}
-              </span>
-              <span
-                style={{ fontFamily: "'Space Mono', monospace", color: '#EF4444', fontSize: 12 }}
-              >
-                -{formatCurrency(invoice.discountAmount ?? 0)}
-              </span>
-            </div>
+            <TotalsRow
+              label={`Discount${invoice.discountType === 'percent' ? ` (${invoice.discountValue}%)` : ''}`}
+              value={`− ${formatCurrency(invoice.discountAmount ?? 0)}`}
+              color={C.red}
+            />
           )}
 
           {invoice.vatEnabled && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '6px 0',
-                borderBottom: '1px solid #2E333D',
-              }}
-            >
-              <span style={{ color: '#5A6478', fontSize: 12 }}>
-                VAT ({((invoice.vatRate ?? 0.15) * 100).toFixed(0)}%)
-              </span>
-              <span
-                style={{ fontFamily: "'Space Mono', monospace", color: '#B8C4D4', fontSize: 12 }}
-              >
-                {formatCurrency(invoice.vatAmount ?? 0)}
-              </span>
-            </div>
+            <TotalsRow
+              label={`VAT (${((invoice.vatRate ?? 0.15) * 100).toFixed(0)}%)`}
+              value={formatCurrency(invoice.vatAmount ?? 0)}
+            />
           )}
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              background: 'rgba(170,219,30,0.1)',
-              border: '1px solid rgba(170,219,30,0.25)',
-              borderRadius: 8,
-              marginTop: 8,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 11,
-                letterSpacing: '0.08em',
-                color: '#AADB1E',
-                textTransform: 'uppercase',
-              }}
-            >
-              Total Due
-            </span>
-            <span
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 18,
-                fontWeight: 700,
-                color: '#AADB1E',
-              }}
-            >
-              {formatCurrency(invoice.total ?? 0)}
-            </span>
+          {/* Solid lime total block */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', background: C.lime, borderRadius: 10, marginTop: 14 }}>
+            <span style={{ fontFamily: syne, fontSize: 14, fontWeight: 700, color: C.dark, letterSpacing: 0.3 }}>TOTAL DUE</span>
+            <span style={{ fontFamily: mono, fontSize: 21, fontWeight: 700, color: C.dark }}>{formatCurrency(invoice.total ?? 0)}</span>
           </div>
         </div>
       </div>
 
-      {/* Payment details */}
+      {/* ── PAYMENT DETAILS ──────────────────────────────────────────────── */}
       {invoice.paymentDetails && (
-        <div
-          style={{
-            margin: '0 32px 24px',
-            padding: '16px',
-            background: '#16181D',
-            borderRadius: 8,
-            border: '1px solid #2E333D',
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "'Space Mono', monospace",
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              color: '#5A6478',
-              textTransform: 'uppercase',
-              marginBottom: 10,
-            }}
-          >
-            Payment Details
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 24px' }}>
-            {[
-              ['Bank', invoice.paymentDetails.bank],
-              ['Account Name', invoice.paymentDetails.accountName],
-              ['Account Number', invoice.paymentDetails.accountNumber],
-              ['Account Type', invoice.paymentDetails.accountType],
-              ['Branch Code', invoice.paymentDetails.branchCode],
-              ['Reference', invoice.paymentDetails.reference || invoice.invoiceNumber || ''],
-            ].map(([label, value]) =>
-              value ? (
-                <div key={label}>
-                  <span style={{ color: '#5A6478', fontSize: 10 }}>{label}: </span>
-                  <span
-                    style={{
-                      fontFamily: "'Space Mono', monospace",
-                      color: '#B8C4D4',
-                      fontSize: 11,
-                    }}
-                  >
-                    {value}
-                  </span>
-                </div>
-              ) : null
+        <div style={{ margin: '0 52px 28px', padding: '24px 28px', background: 'rgba(0,0,0,0.22)', border: `1px solid ${C.border}`, borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+          <div>
+            <SectionLabel>Payment Details</SectionLabel>
+            <PaymentLine label="Bank"        value={invoice.paymentDetails.bank} />
+            <PaymentLine label="Acc Name"    value={invoice.paymentDetails.accountName} />
+            <PaymentLine label="Acc No."     value={invoice.paymentDetails.accountNumber} />
+            <PaymentLine label="Acc Type"    value={invoice.paymentDetails.accountType} />
+            <PaymentLine label="Branch"      value={invoice.paymentDetails.branchCode} />
+            <PaymentLine label="Reference"   value={invoice.paymentDetails.reference || invoice.invoiceNumber || ''} />
+            {invoice.dueDate && (
+              <PaymentLine label="Due Date" value={formatDate(invoice.dueDate)} />
             )}
           </div>
+          <div>
+            <SectionLabel>Payment Terms</SectionLabel>
+            <p style={{ fontFamily: sans, fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+              {invoice.notes
+                ? invoice.notes
+                : 'Payment in full by the due date. Please use the invoice number as your payment reference.'}
+            </p>
+            <p style={{ fontFamily: sans, fontSize: 12, color: C.muted, marginTop: 12, marginBottom: 0 }}>
+              Proof of payment to{' '}
+              <span style={{ color: C.lime }}>info@mrhdigital.co.za</span>
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Notes */}
-      {invoice.notes && (
-        <div style={{ margin: '0 32px 24px' }}>
-          <p
-            style={{
-              fontFamily: "'Space Mono', monospace",
-              fontSize: 9,
-              letterSpacing: '0.1em',
-              color: '#5A6478',
-              textTransform: 'uppercase',
-              marginBottom: 6,
-            }}
-          >
-            Notes
-          </p>
-          <p style={{ color: '#5A6478', fontSize: 12, lineHeight: 1.6, margin: 0 }}>
-            {invoice.notes}
-          </p>
+      {/* ── NOTES (only shown when separate from payment terms) ─────────── */}
+      {invoice.notes && !invoice.paymentDetails && (
+        <div style={{ margin: '0 52px 28px', padding: '18px 22px', background: 'rgba(170,219,30,0.05)', borderLeft: `3px solid ${C.lime}`, borderRadius: '0 8px 8px 0' }}>
+          <p style={{ fontFamily: mono, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: C.lime, margin: '0 0 7px' }}>Note</p>
+          <p style={{ fontFamily: sans, fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>{invoice.notes}</p>
         </div>
       )}
 
-      {/* Footer */}
-      <div
-        style={{
-          borderTop: '1px solid #2E333D',
-          padding: '16px 32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <p style={{ color: '#5A6478', fontSize: 10, margin: 0 }}>
-          mrhdigital.co.za • info@mrhdigital.co.za
-        </p>
-        <p
-          style={{
-            fontFamily: "'Space Mono', monospace",
-            color: '#2E333D',
-            fontSize: 10,
-            margin: 0,
-          }}
-        >
-          {invoice.invoiceNumber}
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <div style={{ marginTop: 8, padding: '20px 52px', borderTop: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src={logoGreen} alt="Mr. H Digital" style={{ height: 26, width: 'auto', opacity: 0.7 }} />
+          <div style={{ fontFamily: mono, fontSize: 11, color: C.muted, lineHeight: 1.6 }}>
+            Mr. H Digital<br />
+            <span style={{ color: C.lime }}>mrhdigital.co.za</span>
+            {' · '}Cape Town, SA
+          </div>
+        </div>
+        <p style={{ fontFamily: sans, fontSize: 12, fontStyle: 'italic', color: C.muted, textAlign: 'right', maxWidth: 220, lineHeight: 1.6, margin: 0 }}>
+          Custom websites &amp; digital products<br />for local businesses.
         </p>
       </div>
+
     </div>
   );
 }
