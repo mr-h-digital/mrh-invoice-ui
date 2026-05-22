@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, FileText, Users, Settings } from 'lucide-react';
 import { clsx } from 'clsx';
+import logoGreen from '../../assets/mrhdigital-logo-green.png';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -14,9 +15,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-brand-border">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-lime flex items-center justify-center shrink-0">
-            <span className="font-display font-black text-brand-dark text-sm">MH</span>
-          </div>
+          <img src={logoGreen} alt="Mr. H Digital" className="w-9 h-9 object-contain shrink-0" />
           <div>
             <p className="font-display font-bold text-brand-white text-sm leading-tight">
               Mr. H Digital

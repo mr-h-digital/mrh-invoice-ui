@@ -1,6 +1,7 @@
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import type { Invoice } from '../../types/invoice';
+import logoGreen from '../../assets/mrhdigital-logo-green.png';
 
 interface InvoicePreviewProps {
   invoice: Partial<Invoice> & {
@@ -46,29 +47,11 @@ export function InvoicePreview({ invoice, darkPrint = false }: InvoicePreviewPro
       <div style={{ background: '#16181D', padding: '32px 32px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: '#AADB1E',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontWeight: 800,
-                  color: '#0F1013',
-                  fontSize: 14,
-                }}
-              >
-                MH
-              </span>
-            </div>
+            <img
+              src={logoGreen}
+              alt="Mr. H Digital"
+              style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
+            />
             <div>
               <p
                 style={{
