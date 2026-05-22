@@ -1,0 +1,284 @@
+import { useEffect, useCallback } from 'react';
+import { useFormContext, Controller } from 'react-hook-form';
+import { ClientSelector } from '../clients/ClientSelector';
+import { LineItemsTable } from './LineItemsTable';
+import { useClientStore } from '../../store/clientStore';
+import type { InvoiceFormValues } from '../../schemas/invoiceSchema';
+import type { Client } from '../../types/client';
+import { calculateTotals } from '../../utils/invoiceTotals';
+import { formatCurrency } from '../../utils/formatCurrency';
+
+const DEFAULT_PAYMENT = {
+  bank: 'Capitec Bank',
+  accountName: 'Mr H Digital',
+  accountNumber: '2496091865',
+  accountType: 'Entrepreneur',
+  branchCode: '470010',
+};
+
+export function InvoiceForm() {
+  const {
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<InvoiceFormValues>();
+
+  const clients = useClientStore((s) => s.clients);
+
+  const lineItems = watch('lineItems') ?? [];
+  const discountType = watch('discountType');
+  const discountValue = watch('discountValue') ?? 0;
+  const vatEnabled = watch('vatEnabled');
+  const vatRate = watch('vatRate') ?? 0.15;
+  const clientId = watch('clientId');
+  const invoiceNumber = watch('invoiceNumber');
+
+  const totals = calculateTotals({
+    lineItems,
+    discountType,
+    discountValue,
+    vatEnabled,
+    vatRate,
+  });
+
+  useEffect(() => {
+    setValue('subtotal' as never, totals.subtotal as never);
+    setValue('discountAmount' as never, totals.discountAmount as never);
+    setValue('vatAmount' as never, totals.vatAmount as never);
+    setValue('total' as never, totals.total as never);
+  }, [totals.subtotal, totals.discountAmount, totals.vatAmount, totals.total, setValue]);
+
+  const handleClientChange = useCallback(
+    (id: string | null, client: Client | null) => {
+      setValue('clientId', id);
+      if (client) {
+        setValue('clientSnapshot.companyName', client.companyName);
+        setValue('clientSnapshot.contactName', client.contactName);
+        setValue('clientSnapshot.email', client.email);
+        setValue('clientSnapshot.phone', client.phone);
+        setValue('clientSnapshot.address', client.address);
+      } else {
+        setValue('clientSnapshot.companyName', '');
+        setValue('clientSnapshot.contactName', '');
+        setValue('clientSnapshot.email', '');
+        setValue('clientSnapshot.phone', '');
+        setValue('clientSnapshot.address', '');
+      }
+    },
+    [setValue]
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Invoice meta */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-4">Invoice Details</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="field-label">Invoice Number</label>
+            <input {...register('invoiceNumber')} className="input-field font-mono" />
+            {errors.invoiceNumber && (
+              <p className="field-error">{errors.invoiceNumber.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="field-label">Status</label>
+            <select {...register('status')} className="input-field">
+              <option value="draft">Draft</option>
+              <option value="sent">Sent</option>
+              <option value="paid">Paid</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+          <div>
+            <label className="field-label">Issue Date</label>
+            <input {...register('issueDate')} type="date" className="input-field" />
+            {errors.issueDate && <p className="field-error">{errors.issueDate.message}</p>}
+          </div>
+          <div>
+            <label className="field-label">Due Date</label>
+            <input {...register('dueDate')} type="date" className="input-field" />
+            {errors.dueDate && <p className="field-error">{errors.dueDate.message}</p>}
+          </div>
+        </div>
+      </section>
+
+      {/* Client */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-4">Client</h3>
+        <Controller
+          control={control}
+          name="clientId"
+          render={({ field }) => (
+            <ClientSelector
+              value={field.value}
+              onChange={handleClientChange}
+            />
+          )}
+        />
+        <div className="grid grid-cols-1 gap-3 mt-4">
+          <div>
+            <label className="field-label">Company Name *</label>
+            <input
+              {...register('clientSnapshot.companyName')}
+              className="input-field"
+              placeholder="Client company name"
+            />
+            {errors.clientSnapshot?.companyName && (
+              <p className="field-error">{errors.clientSnapshot.companyName.message}</p>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="field-label">Contact Name</label>
+              <input {...register('clientSnapshot.contactName')} className="input-field" />
+            </div>
+            <div>
+              <label className="field-label">Email</label>
+              <input {...register('clientSnapshot.email')} type="email" className="input-field" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="field-label">Phone</label>
+              <input {...register('clientSnapshot.phone')} className="input-field" />
+            </div>
+            <div>
+              <label className="field-label">Address</label>
+              <input {...register('clientSnapshot.address')} className="input-field" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Line items */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-4">Line Items</h3>
+        <LineItemsTable />
+        {errors.lineItems && typeof errors.lineItems === 'object' && 'message' in errors.lineItems && (
+          <p className="field-error mt-2">{String(errors.lineItems.message)}</p>
+        )}
+      </section>
+
+      {/* Totals */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-4">Totals</h3>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-brand-muted">Subtotal</span>
+            <span className="font-mono text-brand-white">{formatCurrency(totals.subtotal)}</span>
+          </div>
+
+          {/* Discount */}
+          <div className="border border-brand-border rounded-lg p-3 space-y-2">
+            <label className="field-label">Discount</label>
+            <div className="flex gap-2">
+              <select {...register('discountType')} className="input-field w-32">
+                <option value="">None</option>
+                <option value="amount">Amount (R)</option>
+                <option value="percent">Percent (%)</option>
+              </select>
+              {discountType && (
+                <input
+                  {...register('discountValue', { valueAsNumber: true })}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="input-field flex-1"
+                  placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 500'}
+                />
+              )}
+            </div>
+            {totals.discountAmount > 0 && (
+              <p className="text-xs text-red-400 font-mono">
+                -{formatCurrency(totals.discountAmount)}
+              </p>
+            )}
+          </div>
+
+          {/* VAT */}
+          <div className="flex items-center justify-between border border-brand-border rounded-lg p-3">
+            <div>
+              <label className="field-label mb-0">VAT (15%)</label>
+              <p className="text-xs text-brand-muted">South African VAT</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {vatEnabled && (
+                <span className="font-mono text-sm text-brand-text">
+                  +{formatCurrency(totals.vatAmount)}
+                </span>
+              )}
+              <Controller
+                control={control}
+                name="vatEnabled"
+                render={({ field }) => (
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(!field.value)}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${
+                      field.value ? 'bg-lime' : 'bg-brand-border'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                        field.value ? 'left-5' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="flex items-center justify-between bg-lime/10 border border-lime/25 rounded-lg p-4">
+            <span className="font-mono text-xs uppercase tracking-wider text-lime">Total Due</span>
+            <span className="font-mono text-2xl font-bold text-lime">
+              {formatCurrency(totals.total)}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Notes */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-3">Notes</h3>
+        <textarea
+          {...register('notes')}
+          rows={3}
+          className="input-field resize-none"
+          placeholder="Payment terms, thank you note, project details…"
+        />
+      </section>
+
+      {/* Payment details */}
+      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+        <h3 className="font-display font-bold text-brand-white text-sm mb-4">Payment Details</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {(
+            [
+              ['bank', 'Bank'],
+              ['accountName', 'Account Name'],
+              ['accountNumber', 'Account Number'],
+              ['accountType', 'Account Type'],
+              ['branchCode', 'Branch Code'],
+              ['reference', 'Reference'],
+            ] as const
+          ).map(([field, label]) => (
+            <div key={field}>
+              <label className="field-label">{label}</label>
+              <input
+                {...register(`paymentDetails.${field}`)}
+                className="input-field font-mono text-sm"
+                placeholder={field === 'reference' ? invoiceNumber : DEFAULT_PAYMENT[field as keyof typeof DEFAULT_PAYMENT]}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
