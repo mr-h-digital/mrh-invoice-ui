@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoGreen from '../assets/mrhdigital-logo-green.png';
+import splashBg from '../assets/splash-bg.jpg';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -108,6 +109,23 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             overflow: 'hidden',
           }}
         >
+          {/* ── Background photo at ~70% opacity ── */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${splashBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 40%',
+            opacity: 0.70,
+            mixBlendMode: 'luminosity',
+            pointerEvents: 'none',
+          }} />
+          {/* ── Dark overlay to keep foreground legible ── */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(135deg, rgba(15,16,19,0.72) 0%, rgba(15,16,19,0.55) 50%, rgba(15,16,19,0.80) 100%)',
+            pointerEvents: 'none',
+          }} />
+
           {/* ── Grid dots ── */}
           {dots.map((d, i) => <GridDot key={i} {...d} />)}
 
