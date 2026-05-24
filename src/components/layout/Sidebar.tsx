@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Settings, LogOut } from 'lucide-react';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 import logoGreen from '../../assets/mrhdigital-logo-green.png';
+import { useAuthStore } from '../../store/authStore';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,6 +12,13 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const { user, logout } = useAuthStore();
+
+  function handleLogout() {
+    logout();
+    toast.success('Signed out');
+  }
+
   return (
     <aside className="w-64 shrink-0 h-screen sticky top-0 flex flex-col bg-brand-charcoal border-r border-brand-border print:hidden">
       {/* Logo */}
@@ -47,7 +56,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="px-3 py-4 border-t border-brand-border">
+      <div className="px-3 py-4 border-t border-brand-border space-y-1">
         <button
           disabled
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-brand-muted w-full cursor-not-allowed opacity-50"
@@ -55,9 +64,24 @@ export function Sidebar() {
           <Settings size={18} />
           Settings
         </button>
-        <div className="mt-4 px-3">
-          <p className="text-brand-muted text-xs">Lee Hildebrandt</p>
-          <p className="text-brand-muted text-xs opacity-60">info@mrhdigital.co.za</p>
+
+        {/* User info + logout */}
+        <div className="mt-2 mx-0">
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-brand-card group transition-colors">
+            <div className="min-w-0">
+              <p className="text-brand-text text-xs font-medium truncate">
+                {user?.email ?? 'Lee Hildebrandt'}
+              </p>
+              <p className="text-brand-muted text-xs opacity-70 capitalize">{user?.role ?? 'admin'}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="p-1.5 rounded-md text-brand-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
         </div>
       </div>
     </aside>

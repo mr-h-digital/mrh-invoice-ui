@@ -4,12 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/layout/AppShell';
 import { SplashScreen } from './components/SplashScreen';
+import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { NewInvoicePage } from './pages/NewInvoicePage';
 import { EditInvoicePage } from './pages/EditInvoicePage';
 import { InvoiceDetailPage } from './pages/InvoiceDetailPage';
 import { ClientsPage } from './pages/ClientsPage';
+import { useAuthStore } from './store/authStore';
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -34,9 +36,11 @@ function AnimatedPage({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
   return (
     <>
+      {/* Splash — always shown once on first load */}
       <SplashScreen onComplete={() => setSplashDone(true)} />
 
       <motion.div
@@ -45,74 +49,55 @@ export default function App() {
         transition={{ duration: 0.4, ease: 'easeOut' }}
         style={{ visibility: splashDone ? 'visible' : 'hidden' }}
       >
-        <BrowserRouter>
-          <AppShell>
-            <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <AnimatedPage>
-                      <DashboardPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/invoices"
-                  element={
-                    <AnimatedPage>
-                      <InvoicesPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/invoices/new"
-                  element={
-                    <AnimatedPage>
-                      <NewInvoicePage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/invoices/:id"
-                  element={
-                    <AnimatedPage>
-                      <InvoiceDetailPage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/invoices/:id/edit"
-                  element={
-                    <AnimatedPage>
-                      <EditInvoicePage />
-                    </AnimatedPage>
-                  }
-                />
-                <Route
-                  path="/clients"
-                  element={
-                    <AnimatedPage>
-                      <ClientsPage />
-                    </AnimatedPage>
-                  }
-                />
-              </Routes>
-            </AnimatePresence>
-          </AppShell>
+        {/* Not authenticated → Login */}
+        <AnimatePresence mode="wait">
+          {!user ? (
+            <motion.div
+              key="login"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <LoginPage />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="app"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <BrowserRouter>
+                <AppShell>
+                  <AnimatePresence mode="wait">
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      <Route path="/dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
+                      <Route path="/invoices" element={<AnimatedPage><InvoicesPage /></AnimatedPage>} />
+                      <Route path="/invoices/new" element={<AnimatedPage><NewInvoicePage /></AnimatedPage>} />
+                      <Route path="/invoices/:id" element={<AnimatedPage><InvoiceDetailPage /></AnimatedPage>} />
+                      <Route path="/invoices/:id/edit" element={<AnimatedPage><EditInvoicePage /></AnimatedPage>} />
+                      <Route path="/clients" element={<AnimatedPage><ClientsPage /></AnimatedPage>} />
+                    </Routes>
+                  </AnimatePresence>
+                </AppShell>
 
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              style: {
-                background: '#1E2128',
-                border: '1px solid #2E333D',
-                color: '#B8C4D4',
-              },
-            }}
-          />
-        </BrowserRouter>
+                <Toaster
+                  position="bottom-right"
+                  toastOptions={{
+                    style: {
+                      background: '#1E2128',
+                      border: '1px solid #2E333D',
+                      color: '#B8C4D4',
+                    },
+                  }}
+                />
+              </BrowserRouter>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </>
   );
