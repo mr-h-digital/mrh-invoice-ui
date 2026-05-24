@@ -11,6 +11,7 @@ import { NewInvoicePage } from './pages/NewInvoicePage';
 import { EditInvoicePage } from './pages/EditInvoicePage';
 import { InvoiceDetailPage } from './pages/InvoiceDetailPage';
 import { ClientsPage } from './pages/ClientsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { useAuthStore } from './store/authStore';
 
 const pageVariants = {
@@ -80,6 +81,7 @@ export default function App() {
                       <Route path="/invoices/:id" element={<AnimatedPage><InvoiceDetailPage /></AnimatedPage>} />
                       <Route path="/invoices/:id/edit" element={<AnimatedPage><EditInvoicePage /></AnimatedPage>} />
                       <Route path="/clients" element={<AnimatedPage><ClientsPage /></AnimatedPage>} />
+                      <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                   </AnimatePresence>
                 </AppShell>
