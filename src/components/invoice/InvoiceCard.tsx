@@ -27,62 +27,50 @@ export function InvoiceCard({ invoice, onDuplicate, onDelete }: InvoiceCardProps
   }, []);
 
   return (
-    <div className="bg-brand-card border border-brand-border rounded-xl p-5 hover:border-brand-muted transition-colors">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
+    <div className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5 hover:border-brand-muted transition-colors">
+      <div className="flex items-start justify-between gap-3">
+        {/* Left — main info, tappable area leads to detail */}
+        <Link to={`/invoices/${invoice.id}`} className="min-w-0 flex-1 group">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-mono text-xs text-brand-muted">{invoice.invoiceNumber}</span>
             <Badge status={invoice.status} />
           </div>
-          <p className="font-display font-bold text-brand-white truncate">
+          <p className="font-display font-bold text-brand-white truncate group-hover:text-lime transition-colors">
             {invoice.clientSnapshot.companyName}
           </p>
           {invoice.clientSnapshot.contactName && (
             <p className="text-brand-muted text-sm truncate">{invoice.clientSnapshot.contactName}</p>
           )}
-        </div>
+        </Link>
 
         <div className="flex items-center gap-2 shrink-0">
           <div className="text-right">
-            <p className="font-mono font-bold text-brand-white">{formatCurrency(invoice.total)}</p>
+            <p className="font-mono font-bold text-brand-white text-sm sm:text-base">{formatCurrency(invoice.total)}</p>
             <p className="text-brand-muted text-xs">Due {formatDateShort(invoice.dueDate)}</p>
           </div>
 
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="p-1.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-card2 transition-colors"
+              aria-label="Invoice actions"
+              className="p-2.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-card2 transition-colors"
             >
               <MoreVertical size={16} />
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-40 bg-brand-card2 border border-brand-border rounded-lg shadow-xl z-20 py-1">
-                <Link
-                  to={`/invoices/${invoice.id}`}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-brand-text hover:bg-brand-border transition-colors"
-                  onClick={() => setMenuOpen(false)}
-                >
+              <div className="absolute right-0 top-full mt-1 w-44 bg-brand-card2 border border-brand-border rounded-xl shadow-2xl z-20 py-1 overflow-hidden">
+                <Link to={`/invoices/${invoice.id}`} className="flex items-center gap-2 px-4 py-3 text-sm text-brand-text hover:bg-brand-border transition-colors" onClick={() => setMenuOpen(false)}>
                   <Eye size={14} /> View
                 </Link>
-                <Link
-                  to={`/invoices/${invoice.id}/edit`}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-brand-text hover:bg-brand-border transition-colors"
-                  onClick={() => setMenuOpen(false)}
-                >
+                <Link to={`/invoices/${invoice.id}/edit`} className="flex items-center gap-2 px-4 py-3 text-sm text-brand-text hover:bg-brand-border transition-colors" onClick={() => setMenuOpen(false)}>
                   <Pencil size={14} /> Edit
                 </Link>
-                <button
-                  onClick={() => { onDuplicate(invoice.id); setMenuOpen(false); }}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-brand-text hover:bg-brand-border transition-colors w-full text-left"
-                >
+                <button onClick={() => { onDuplicate(invoice.id); setMenuOpen(false); }} className="flex items-center gap-2 px-4 py-3 text-sm text-brand-text hover:bg-brand-border transition-colors w-full text-left">
                   <Copy size={14} /> Duplicate
                 </button>
                 <hr className="border-brand-border my-1" />
-                <button
-                  onClick={() => { onDelete(invoice.id); setMenuOpen(false); }}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-brand-border transition-colors w-full text-left"
-                >
+                <button onClick={() => { onDelete(invoice.id); setMenuOpen(false); }} className="flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-brand-border transition-colors w-full text-left">
                   <Trash2 size={14} /> Delete
                 </button>
               </div>
@@ -91,14 +79,10 @@ export function InvoiceCard({ invoice, onDuplicate, onDelete }: InvoiceCardProps
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-brand-border">
-        <span className="text-brand-muted text-xs">
-          Issued {formatDateShort(invoice.issueDate)}
-        </span>
+      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-brand-border flex-wrap">
+        <span className="text-brand-muted text-xs">Issued {formatDateShort(invoice.issueDate)}</span>
         <span className="text-brand-muted text-xs">•</span>
-        <span className="text-brand-muted text-xs">
-          {invoice.lineItems.length} item{invoice.lineItems.length !== 1 ? 's' : ''}
-        </span>
+        <span className="text-brand-muted text-xs">{invoice.lineItems.length} item{invoice.lineItems.length !== 1 ? 's' : ''}</span>
       </div>
     </div>
   );

@@ -6,15 +6,16 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { invoiceFormSchema, type InvoiceFormValues } from '../schemas/invoiceSchema';
 import { InvoiceForm } from '../components/invoice/InvoiceForm';
-import invoicesBg from '../assets/invoices-bg.jpg';
 import { InvoicePreview } from '../components/invoice/InvoicePreview';
 import { TopBar } from '../components/layout/TopBar';
+import { PageBackground } from '../components/layout/PageBackground';
 import { useInvoices } from '../hooks/useInvoices';
 import { useInvoiceStore } from '../store/invoiceStore';
 import { generateInvoiceNumber } from '../utils/generateInvoiceNumber';
 import { calculateTotals } from '../utils/invoiceTotals';
 import { todayISO, addDaysISO } from '../utils/formatDate';
 import { v4 as uuid } from 'uuid';
+import invoicesBg from '../assets/invoices-bg.jpg';
 
 export function NewInvoicePage() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ export function NewInvoicePage() {
     },
   });
 
+  // Subscribe only to fields needed for the live preview
   const formValues = methods.watch();
   const totals = calculateTotals({
     lineItems: formValues.lineItems ?? [],
@@ -59,8 +61,6 @@ export function NewInvoicePage() {
     vatEnabled: formValues.vatEnabled,
     vatRate: formValues.vatRate ?? 0.15,
   });
-
-  const previewInvoice = { ...formValues, ...totals };
 
   const onSubmit: SubmitHandler<InvoiceFormValues> = async (data) => {
     const computed = calculateTotals({
@@ -81,26 +81,20 @@ export function NewInvoicePage() {
 
   return (
     <FormProvider {...methods}>
-      <div
-        className="flex-1 flex flex-col relative"
-        style={{ backgroundImage: `url(${invoicesBg})`, backgroundSize: 'cover', backgroundPosition: 'center 35%' }}
-      >
-        <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
-        <div className="relative z-10 flex flex-col flex-1 min-h-0">
+      <PageBackground image={invoicesBg} position="center 35%">
         <TopBar
           title="New Invoice"
           subtitle={methods.watch('invoiceNumber')}
           actions={
-            <div className="flex items-center gap-3">
-              <div className="flex lg:hidden bg-brand-card border border-brand-border rounded-lg p-1 gap-1">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Mobile tab switcher */}
+              <div className="flex lg:hidden bg-brand-card border border-brand-border rounded-lg p-0.5 gap-0.5">
                 {(['form', 'preview'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-3 py-1.5 rounded-md text-xs capitalize transition-colors ${
-                      activeTab === tab
-                        ? 'bg-lime text-brand-dark font-medium'
-                        : 'text-brand-muted'
+                    className={`px-2.5 py-1.5 rounded-md text-xs capitalize transition-colors ${
+                      activeTab === tab ? 'bg-lime text-brand-dark font-medium' : 'text-brand-muted'
                     }`}
                   >
                     {tab}
@@ -109,37 +103,30 @@ export function NewInvoicePage() {
               </div>
               <button
                 onClick={methods.handleSubmit(onSubmit)}
-                className="flex items-center gap-2 px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
               >
                 <Save size={15} />
-                Save Invoice
+                <span className="hidden sm:inline">Save Invoice</span>
+                <span className="sm:hidden">Save</span>
               </button>
             </div>
           }
         />
 
         <div className="flex-1 flex min-h-0">
-          <div
-            className={`flex-1 overflow-y-auto p-6 lg:max-w-xl xl:max-w-2xl ${
-              activeTab === 'preview' ? 'hidden lg:block' : ''
-            }`}
-          >
+          <div className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:max-w-xl xl:max-w-2xl ${activeTab === 'preview' ? 'hidden lg:block' : ''}`}>
             <InvoiceForm />
           </div>
-
-          <div
-            className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-6 ${
-              activeTab === 'form' ? 'hidden lg:block' : ''
-            }`}
-          >
-            <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">
-              Live Preview
-            </p>
-            <InvoicePreview invoice={previewInvoice as never} />
+          <div className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-4 sm:p-6 ${activeTab === 'form' ? 'hidden lg:block' : ''}`}>
+            <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">Live Preview</p>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: 600 }}>
+                <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
+              </div>
+            </div>
           </div>
         </div>
-        </div>
-      </div>
+      </PageBackground>
     </FormProvider>
   );
 }

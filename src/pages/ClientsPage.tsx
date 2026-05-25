@@ -10,6 +10,7 @@ import { Modal } from '../components/shared/Modal';
 import { ConfirmDialog } from '../components/shared/ConfirmDialog';
 import { EmptyState } from '../components/shared/EmptyState';
 import { TopBar } from '../components/layout/TopBar';
+import { PageBackground } from '../components/layout/PageBackground';
 import type { Client } from '../types/client';
 import type { ClientFormValues } from '../schemas/clientSchema';
 import clientsBg from '../assets/clients-bg.jpg';
@@ -49,50 +50,43 @@ export function ClientsPage() {
     }
   }
 
-  const deleteHasInvoices =
-    deleteTarget && invoices.some((i) => i.clientId === deleteTarget.id);
+  const deleteHasInvoices = deleteTarget && invoices.some((i) => i.clientId === deleteTarget.id);
 
   return (
-    <div
-      className="flex-1 relative"
-      style={{
-        backgroundImage: `url(${clientsBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center 40%',
-      }}
-    >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
-
-      {/* Content above overlay */}
-      <div className="relative z-10 flex flex-col flex-1">
+    <PageBackground image={clientsBg} position="center 40%">
       <TopBar
         title="Clients"
         subtitle={`${clients.length} saved`}
         actions={
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
           >
             <Plus size={16} />
-            Add Client
+            <span className="hidden sm:inline">Add Client</span>
+            <span className="sm:hidden">Add</span>
           </button>
         }
       />
 
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         {loading ? (
-          <div className="text-center py-16 text-brand-muted">Loading…</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1,2,3].map((n) => (
+              <div key={n} className="bg-brand-card border border-brand-border rounded-xl p-5 animate-pulse">
+                <div className="h-4 bg-brand-border rounded w-2/3 mb-3" />
+                <div className="h-3 bg-brand-border rounded w-1/2 mb-4" />
+                <div className="h-3 bg-brand-border rounded w-1/3" />
+              </div>
+            ))}
+          </div>
         ) : clients.length === 0 ? (
           <EmptyState
             icon={<Users size={28} />}
             title="No clients yet"
             description="Save client details to quickly populate invoices."
             action={
-              <button
-                onClick={() => setModalOpen(true)}
-                className="px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
-              >
+              <button onClick={() => setModalOpen(true)} className="px-4 py-2.5 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors">
                 Add Client
               </button>
             }
@@ -101,19 +95,8 @@ export function ClientsPage() {
           <AnimatePresence mode="popLayout">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clients.map((client, i) => (
-                <motion.div
-                  key={client.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ delay: i * 0.05, duration: 0.3 }}
-                >
-                  <ClientCard
-                    client={client}
-                    invoices={invoices}
-                    onEdit={setEditTarget}
-                    onDelete={setDeleteTarget}
-                  />
+                <motion.div key={client.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ delay: i * 0.05, duration: 0.3 }}>
+                  <ClientCard client={client} invoices={invoices} onEdit={setEditTarget} onDelete={setDeleteTarget} />
                 </motion.div>
               ))}
             </div>
@@ -121,32 +104,16 @@ export function ClientsPage() {
         )}
       </div>
 
-      {/* Add client modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Client" size="lg">
-        <ClientForm
-          onSubmit={handleAddClient}
-          onCancel={() => setModalOpen(false)}
-        />
+        <ClientForm onSubmit={handleAddClient} onCancel={() => setModalOpen(false)} />
       </Modal>
 
-      {/* Edit client modal */}
-      <Modal
-        open={!!editTarget}
-        onClose={() => setEditTarget(null)}
-        title="Edit Client"
-        size="lg"
-      >
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Client" size="lg">
         {editTarget && (
-          <ClientForm
-            defaultValues={editTarget}
-            onSubmit={handleEditClient}
-            onCancel={() => setEditTarget(null)}
-            submitLabel="Save Changes"
-          />
+          <ClientForm defaultValues={editTarget} onSubmit={handleEditClient} onCancel={() => setEditTarget(null)} submitLabel="Save Changes" />
         )}
       </Modal>
 
-      {/* Delete confirm */}
       <ConfirmDialog
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -160,7 +127,6 @@ export function ClientsPage() {
         confirmLabel="Delete"
         loading={deleting}
       />
-      </div>
-    </div>
+    </PageBackground>
   );
 }

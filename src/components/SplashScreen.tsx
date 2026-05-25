@@ -21,13 +21,16 @@ function CodeLine({ text, delay, color = '#5A6478' }: { text: string; delay: num
   );
 }
 
+// Durations are fixed constants — avoids Math.random() firing on each render
+const DOT_DURATIONS = [3.8, 4.2, 3.4, 4.8, 3.2, 4.5, 3.9, 4.1, 3.6, 4.7, 3.3, 4.4, 3.7, 4.9];
+
 // ── Floating grid dot ─────────────────────────────────────────────────────
-function GridDot({ x, y, delay }: { x: number; y: number; delay: number }) {
+function GridDot({ x, y, delay, duration }: { x: number; y: number; delay: number; duration: number }) {
   return (
     <motion.div
       style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: 3, height: 3, borderRadius: '50%', background: 'rgba(170,219,30,0.25)' }}
       animate={{ opacity: [0.15, 0.6, 0.15], scale: [1, 1.4, 1] }}
-      transition={{ delay, duration: 3 + Math.random() * 2, repeat: Infinity, ease: 'easeInOut' }}
+      transition={{ delay, duration, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 }
@@ -72,14 +75,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const dots: { x: number; y: number; delay: number }[] = [
-    { x: 8,  y: 12, delay: 0 },    { x: 92, y: 8,  delay: 0.4 },
-    { x: 5,  y: 85, delay: 0.8 },  { x: 95, y: 88, delay: 0.2 },
-    { x: 20, y: 5,  delay: 1.2 },  { x: 80, y: 92, delay: 0.6 },
-    { x: 15, y: 50, delay: 1.6 },  { x: 85, y: 45, delay: 1.0 },
-    { x: 50, y: 3,  delay: 0.3 },  { x: 48, y: 95, delay: 0.9 },
-    { x: 32, y: 18, delay: 1.4 },  { x: 68, y: 78, delay: 0.5 },
-    { x: 72, y: 22, delay: 1.8 },  { x: 28, y: 75, delay: 1.1 },
+  const dots = [
+    { x: 8,  y: 12, delay: 0   }, { x: 92, y: 8,  delay: 0.4 },
+    { x: 5,  y: 85, delay: 0.8 }, { x: 95, y: 88, delay: 0.2 },
+    { x: 20, y: 5,  delay: 1.2 }, { x: 80, y: 92, delay: 0.6 },
+    { x: 15, y: 50, delay: 1.6 }, { x: 85, y: 45, delay: 1.0 },
+    { x: 50, y: 3,  delay: 0.3 }, { x: 48, y: 95, delay: 0.9 },
+    { x: 32, y: 18, delay: 1.4 }, { x: 68, y: 78, delay: 0.5 },
+    { x: 72, y: 22, delay: 1.8 }, { x: 28, y: 75, delay: 1.1 },
   ];
 
   const codeLines = [
@@ -127,7 +130,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           }} />
 
           {/* ── Grid dots ── */}
-          {dots.map((d, i) => <GridDot key={i} {...d} />)}
+          {dots.map((d, i) => <GridDot key={i} {...d} duration={DOT_DURATIONS[i]} />)}
 
           {/* ── Radial lime glow behind logo ── */}
           <div style={{

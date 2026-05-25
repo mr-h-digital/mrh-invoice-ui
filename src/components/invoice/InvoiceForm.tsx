@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { ClientSelector } from '../clients/ClientSelector';
 import { LineItemsTable } from './LineItemsTable';
 import { useClientStore } from '../../store/clientStore';
@@ -20,27 +20,24 @@ export function InvoiceForm() {
   const {
     register,
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useFormContext<InvoiceFormValues>();
 
   const clients = useClientStore((s) => s.clients);
 
-  const lineItems = watch('lineItems') ?? [];
-  const discountType = watch('discountType');
-  const discountValue = watch('discountValue') ?? 0;
-  const vatEnabled = watch('vatEnabled');
-  const vatRate = watch('vatRate') ?? 0.15;
-  const clientId = watch('clientId');
-  const invoiceNumber = watch('invoiceNumber');
+  // Single useWatch for all derived values — avoids 7 separate subscriptions
+  const [lineItems, discountType, discountValue, vatEnabled, vatRate, invoiceNumber] = useWatch({
+    control,
+    name: ['lineItems', 'discountType', 'discountValue', 'vatEnabled', 'vatRate', 'invoiceNumber'],
+  });
 
   const totals = calculateTotals({
-    lineItems,
-    discountType,
-    discountValue,
-    vatEnabled,
-    vatRate,
+    lineItems: lineItems ?? [],
+    discountType: discountType ?? null,
+    discountValue: discountValue ?? 0,
+    vatEnabled: vatEnabled ?? false,
+    vatRate: vatRate ?? 0.15,
   });
 
   useEffect(() => {
@@ -71,17 +68,15 @@ export function InvoiceForm() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Invoice meta */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Invoice Details</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="field-label">Invoice Number</label>
             <input {...register('invoiceNumber')} className="input-field font-mono" />
-            {errors.invoiceNumber && (
-              <p className="field-error">{errors.invoiceNumber.message}</p>
-            )}
+            {errors.invoiceNumber && <p className="field-error">{errors.invoiceNumber.message}</p>}
           </div>
           <div>
             <label className="field-label">Status</label>
@@ -94,43 +89,36 @@ export function InvoiceForm() {
           </div>
           <div>
             <label className="field-label">Issue Date</label>
-            <input {...register('issueDate')} type="date" className="input-field" />
+            <input {...register('issueDate')} type="date" placeholder="YYYY-MM-DD" className="input-field" />
             {errors.issueDate && <p className="field-error">{errors.issueDate.message}</p>}
           </div>
           <div>
             <label className="field-label">Due Date</label>
-            <input {...register('dueDate')} type="date" className="input-field" />
+            <input {...register('dueDate')} type="date" placeholder="YYYY-MM-DD" className="input-field" />
             {errors.dueDate && <p className="field-error">{errors.dueDate.message}</p>}
           </div>
         </div>
       </section>
 
       {/* Client */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Client</h3>
         <Controller
           control={control}
           name="clientId"
           render={({ field }) => (
-            <ClientSelector
-              value={field.value}
-              onChange={handleClientChange}
-            />
+            <ClientSelector value={field.value} onChange={handleClientChange} />
           )}
         />
         <div className="grid grid-cols-1 gap-3 mt-4">
           <div>
             <label className="field-label">Company Name *</label>
-            <input
-              {...register('clientSnapshot.companyName')}
-              className="input-field"
-              placeholder="Client company name"
-            />
+            <input {...register('clientSnapshot.companyName')} className="input-field" placeholder="Client company name" />
             {errors.clientSnapshot?.companyName && (
               <p className="field-error">{errors.clientSnapshot.companyName.message}</p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="field-label">Contact Name</label>
               <input {...register('clientSnapshot.contactName')} className="input-field" />
@@ -140,7 +128,7 @@ export function InvoiceForm() {
               <input {...register('clientSnapshot.email')} type="email" className="input-field" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="field-label">Phone</label>
               <input {...register('clientSnapshot.phone')} className="input-field" />
@@ -154,7 +142,7 @@ export function InvoiceForm() {
       </section>
 
       {/* Line items */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5 overflow-x-auto">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Line Items</h3>
         <LineItemsTable />
         {errors.lineItems && typeof errors.lineItems === 'object' && 'message' in errors.lineItems && (
@@ -163,9 +151,8 @@ export function InvoiceForm() {
       </section>
 
       {/* Totals */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Totals</h3>
-
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-brand-muted">Subtotal</span>
@@ -176,7 +163,7 @@ export function InvoiceForm() {
           <div className="border border-brand-border rounded-lg p-3 space-y-2">
             <label className="field-label">Discount</label>
             <div className="flex gap-2">
-              <select {...register('discountType')} className="input-field w-32">
+              <select {...register('discountType')} className="input-field w-36">
                 <option value="">None</option>
                 <option value="amount">Amount (R)</option>
                 <option value="percent">Percent (%)</option>
@@ -184,18 +171,14 @@ export function InvoiceForm() {
               {discountType && (
                 <input
                   {...register('discountValue', { valueAsNumber: true })}
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="number" min="0" step="0.01"
                   className="input-field flex-1"
                   placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 500'}
                 />
               )}
             </div>
             {totals.discountAmount > 0 && (
-              <p className="text-xs text-red-400 font-mono">
-                -{formatCurrency(totals.discountAmount)}
-              </p>
+              <p className="text-xs text-red-400 font-mono">-{formatCurrency(totals.discountAmount)}</p>
             )}
           </div>
 
@@ -207,9 +190,7 @@ export function InvoiceForm() {
             </div>
             <div className="flex items-center gap-3">
               {vatEnabled && (
-                <span className="font-mono text-sm text-brand-text">
-                  +{formatCurrency(totals.vatAmount)}
-                </span>
+                <span className="font-mono text-sm text-brand-text">+{formatCurrency(totals.vatAmount)}</span>
               )}
               <Controller
                 control={control}
@@ -218,15 +199,12 @@ export function InvoiceForm() {
                   <button
                     type="button"
                     onClick={() => field.onChange(!field.value)}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${
-                      field.value ? 'bg-lime' : 'bg-brand-border'
-                    }`}
+                    aria-checked={field.value}
+                    role="switch"
+                    aria-label="Toggle VAT"
+                    className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${field.value ? 'bg-lime' : 'bg-brand-border'}`}
                   >
-                    <span
-                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-                        field.value ? 'left-5' : 'left-1'
-                      }`}
-                    />
+                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${field.value ? 'left-6' : 'left-1'}`} />
                   </button>
                 )}
               />
@@ -236,15 +214,13 @@ export function InvoiceForm() {
           {/* Total */}
           <div className="flex items-center justify-between bg-lime/10 border border-lime/25 rounded-lg p-4">
             <span className="font-mono text-xs uppercase tracking-wider text-lime">Total Due</span>
-            <span className="font-mono text-2xl font-bold text-lime">
-              {formatCurrency(totals.total)}
-            </span>
+            <span className="font-mono text-xl sm:text-2xl font-bold text-lime">{formatCurrency(totals.total)}</span>
           </div>
         </div>
       </section>
 
       {/* Notes */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-3">Notes</h3>
         <textarea
           {...register('notes')}
@@ -255,9 +231,9 @@ export function InvoiceForm() {
       </section>
 
       {/* Payment details */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-5">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Payment Details</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(
             [
               ['bank', 'Bank'],
