@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { invoiceFormSchema, type InvoiceFormValues } from '../schemas/invoiceSchema';
 import { InvoiceForm } from '../components/invoice/InvoiceForm';
+import invoicesBg from '../assets/invoices-bg.jpg';
 import { InvoicePreview } from '../components/invoice/InvoicePreview';
 import { TopBar } from '../components/layout/TopBar';
 import { useInvoices } from '../hooks/useInvoices';
@@ -80,7 +81,12 @@ export function NewInvoicePage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="flex-1 flex flex-col">
+      <div
+        className="flex-1 flex flex-col relative"
+        style={{ backgroundImage: `url(${invoicesBg})`, backgroundSize: 'cover', backgroundPosition: 'center 35%' }}
+      >
+        <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
+        <div className="relative z-10 flex flex-col flex-1 min-h-0">
         <TopBar
           title="New Invoice"
           subtitle={methods.watch('invoiceNumber')}
@@ -131,6 +137,7 @@ export function NewInvoicePage() {
             </p>
             <InvoicePreview invoice={previewInvoice as never} />
           </div>
+        </div>
         </div>
       </div>
     </FormProvider>

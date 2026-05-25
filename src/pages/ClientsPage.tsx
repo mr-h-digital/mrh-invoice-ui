@@ -12,6 +12,7 @@ import { EmptyState } from '../components/shared/EmptyState';
 import { TopBar } from '../components/layout/TopBar';
 import type { Client } from '../types/client';
 import type { ClientFormValues } from '../schemas/clientSchema';
+import clientsBg from '../assets/clients-bg.jpg';
 
 export function ClientsPage() {
   const { clients, loading, addClient, updateClient, deleteClient } = useClients();
@@ -52,7 +53,19 @@ export function ClientsPage() {
     deleteTarget && invoices.some((i) => i.clientId === deleteTarget.id);
 
   return (
-    <div className="flex-1">
+    <div
+      className="flex-1 relative"
+      style={{
+        backgroundImage: `url(${clientsBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 40%',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
+
+      {/* Content above overlay */}
+      <div className="relative z-10 flex flex-col flex-1">
       <TopBar
         title="Clients"
         subtitle={`${clients.length} saved`}
@@ -147,6 +160,7 @@ export function ClientsPage() {
         confirmLabel="Delete"
         loading={deleting}
       />
+      </div>
     </div>
   );
 }

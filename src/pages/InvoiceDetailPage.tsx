@@ -9,6 +9,7 @@ import { TopBar } from '../components/layout/TopBar';
 import { useInvoices, useInvoice } from '../hooks/useInvoices';
 import { usePrint } from '../hooks/usePrint';
 import type { InvoiceStatus } from '../types/invoice';
+import invoicesBg from '../assets/invoices-bg.jpg';
 
 export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -68,7 +69,12 @@ export function InvoiceDetailPage() {
   }
 
   return (
-    <div className="flex-1">
+    <div
+      className="flex-1 relative"
+      style={{ backgroundImage: `url(${invoicesBg})`, backgroundSize: 'cover', backgroundPosition: 'center 35%' }}
+    >
+      <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
+      <div className="relative z-10 flex flex-col flex-1">
       <TopBar
         title={invoice.invoiceNumber}
         subtitle={invoice.clientSnapshot.companyName}
@@ -162,6 +168,7 @@ export function InvoiceDetailPage() {
         confirmLabel="Delete"
         loading={deleting}
       />
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useInvoices } from '../hooks/useInvoices';
 import { InvoiceCard } from '../components/invoice/InvoiceCard';
 import { EmptyState } from '../components/shared/EmptyState';
+import invoicesBg from '../assets/invoices-bg.jpg';
 import { ConfirmDialog } from '../components/shared/ConfirmDialog';
 import { TopBar } from '../components/layout/TopBar';
 import type { InvoiceStatus } from '../types/invoice';
@@ -61,7 +62,12 @@ export function InvoicesPage() {
   }
 
   return (
-    <div className="flex-1">
+    <div
+      className="flex-1 relative"
+      style={{ backgroundImage: `url(${invoicesBg})`, backgroundSize: 'cover', backgroundPosition: 'center 35%' }}
+    >
+      <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
+      <div className="relative z-10 flex flex-col flex-1">
       <TopBar
         title="Invoices"
         subtitle={`${invoices.length} total`}
@@ -159,6 +165,7 @@ export function InvoicesPage() {
         confirmLabel="Delete"
         loading={deleting}
       />
+      </div>
     </div>
   );
 }
