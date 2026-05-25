@@ -8,6 +8,7 @@ import { Badge } from '../components/shared/Badge';
 import { TopBar } from '../components/layout/TopBar';
 import { formatCurrency } from '../utils/formatCurrency';
 import { formatDateShort } from '../utils/formatDate';
+import dashboardBg from '../assets/dashboard-bg.jpg';
 
 function StatCard({
   label,
@@ -68,7 +69,20 @@ export function DashboardPage() {
   ];
 
   return (
-    <div className="flex-1">
+    <div
+      className="flex-1 relative"
+      style={{
+        backgroundImage: `url(${dashboardBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 30%',
+        backgroundAttachment: 'local',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-brand-dark/88 pointer-events-none" />
+
+      {/* Content above overlay */}
+      <div className="relative z-10 flex flex-col flex-1">
       <TopBar
         title="Dashboard"
         subtitle="Welcome back, Lee"
@@ -151,6 +165,7 @@ export function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -54,17 +54,18 @@ export function LoginPage() {
       }} />
 
       {/* ── Corner accents ── */}
-      {[
-        { top: 28, left: 28,  scaleOrigin: 'top left' },
-        { top: 28, right: 28, scaleOrigin: 'top right' },
-        { bottom: 28, left: 28,  scaleOrigin: 'bottom left' },
-        { bottom: 28, right: 28, scaleOrigin: 'bottom right' },
-      ].map((pos, i) => (
-        <motion.div key={i} style={{ position: 'absolute', ...pos as React.CSSProperties }}>
-          <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.1 + i * 0.05, duration: 0.45 }} style={{ width: 40, height: 2, background: '#AADB1E', borderRadius: 2, transformOrigin: pos.left !== undefined ? 'left' : 'right' }} />
-          <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.1 + i * 0.05, duration: 0.45 }} style={{ width: 2, height: 40, background: '#AADB1E', borderRadius: 2, position: 'absolute', top: 0, left: pos.left !== undefined ? 0 : undefined, right: pos.right !== undefined ? 0 : undefined, transformOrigin: pos.top !== undefined ? 'top' : 'bottom' }} />
-        </motion.div>
-      ))}
+      {/* top-left */}
+      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.10, duration: 0.45 }} style={{ position: 'absolute', top: 28, left: 28, width: 40, height: 2, background: '#AADB1E', borderRadius: 2, transformOrigin: 'left' }} />
+      <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.10, duration: 0.45 }} style={{ position: 'absolute', top: 28, left: 28, width: 2, height: 40, background: '#AADB1E', borderRadius: 2, transformOrigin: 'top' }} />
+      {/* top-right */}
+      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.15, duration: 0.45 }} style={{ position: 'absolute', top: 28, right: 28, width: 40, height: 2, background: '#AADB1E', borderRadius: 2, transformOrigin: 'right' }} />
+      <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.15, duration: 0.45 }} style={{ position: 'absolute', top: 28, right: 28, width: 2, height: 40, background: '#AADB1E', borderRadius: 2, transformOrigin: 'top' }} />
+      {/* bottom-left */}
+      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.20, duration: 0.45 }} style={{ position: 'absolute', bottom: 28, left: 28, width: 40, height: 2, background: '#AADB1E', borderRadius: 2, transformOrigin: 'left' }} />
+      <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.20, duration: 0.45 }} style={{ position: 'absolute', bottom: 28, left: 28, width: 2, height: 40, background: '#AADB1E', borderRadius: 2, transformOrigin: 'bottom' }} />
+      {/* bottom-right */}
+      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.25, duration: 0.45 }} style={{ position: 'absolute', bottom: 28, right: 28, width: 40, height: 2, background: '#AADB1E', borderRadius: 2, transformOrigin: 'right' }} />
+      <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.25, duration: 0.45 }} style={{ position: 'absolute', bottom: 28, right: 28, width: 2, height: 40, background: '#AADB1E', borderRadius: 2, transformOrigin: 'bottom' }} />
 
       {/* ── Login card ── */}
       <motion.div
