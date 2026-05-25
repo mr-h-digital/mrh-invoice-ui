@@ -10,32 +10,30 @@ import { InvoicePreview } from '../components/invoice/InvoicePreview';
 import { TopBar } from '../components/layout/TopBar';
 import { PageBackground } from '../components/layout/PageBackground';
 import { useInvoices } from '../hooks/useInvoices';
-import { useInvoiceStore } from '../store/invoiceStore';
-import { generateInvoiceNumber } from '../utils/generateInvoiceNumber';
+import { invoiceService } from '../services/invoiceService';
 import { calculateTotals } from '../utils/invoiceTotals';
 import { todayISO, addDaysISO } from '../utils/formatDate';
 import { v4 as uuid } from 'uuid';
 import invoicesBg from '../assets/invoices-bg.jpg';
+import { useEffect } from 'react';
 
 export function NewInvoicePage() {
   const navigate = useNavigate();
   const { addInvoice } = useInvoices();
-  const invoices = useInvoiceStore((s) => s.invoices);
   const [activeTab, setActiveTab] = useState<'form' | 'preview'>('form');
 
   const today = todayISO();
-  const invoiceNumber = generateInvoiceNumber(invoices);
 
   const methods = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema) as Resolver<InvoiceFormValues>,
     defaultValues: {
-      invoiceNumber,
-      status: 'draft',
+      invoiceNumber: `INV-${today.slice(0, 4)}-???`,
+      status: 'DRAFT',
       issueDate: today,
       dueDate: addDaysISO(today, 30),
       clientId: null,
       clientSnapshot: { companyName: '', contactName: '', email: '', phone: '', address: '' },
-      lineItems: [{ id: uuid(), name: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }],
+      lineItems: [{ id: uuid(), name: '', description: '', quantity: 1, unitPrice: 0, amount: 0, sortOrder: 0 }],
       discountType: null,
       discountValue: 0,
       vatEnabled: false,
@@ -47,10 +45,20 @@ export function NewInvoicePage() {
         accountNumber: '2496091865',
         accountType: 'Entrepreneur',
         branchCode: '470010',
-        reference: invoiceNumber,
+        reference: '',
       },
     },
   });
+
+  // Fetch the next invoice number from the service (uses API or local depending on VITE_USE_API)
+  useEffect(() => {
+    invoiceService.getNextInvoiceNumber().then((number) => {
+      methods.setValue('invoiceNumber', number);
+      methods.setValue('paymentDetails.reference', number);
+    }).catch(() => {
+      // fallback already handled by getNextInvoiceNumber
+    });
+  }, [methods]);
 
   // Subscribe only to fields needed for the live preview
   const formValues = methods.watch();

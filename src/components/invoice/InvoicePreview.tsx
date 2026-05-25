@@ -13,17 +13,17 @@ interface InvoicePreviewProps {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  draft: 'DRAFT',
-  sent: 'SENT',
-  paid: 'PAID',
-  overdue: 'OVERDUE',
+  DRAFT:   'DRAFT',
+  SENT:    'SENT',
+  PAID:    'PAID',
+  OVERDUE: 'OVERDUE',
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  draft: '#5A6478',
-  sent: '#60A5FA',
-  paid: '#AADB1E',
-  overdue: '#EF4444',
+  DRAFT:   '#5A6478',
+  SENT:    '#60A5FA',
+  PAID:    '#AADB1E',
+  OVERDUE: '#EF4444',
 };
 
 // ─── Shared token values ───────────────────────────────────────────────────
@@ -216,7 +216,7 @@ export function InvoicePreview({ invoice, darkPrint = false }: InvoicePreviewPro
 
           {(invoice.discountAmount ?? 0) > 0 && (
             <TotalsRow
-              label={`Discount${invoice.discountType === 'percent' ? ` (${invoice.discountValue}%)` : ''}`}
+              label={`Discount${invoice.discountType === 'PERCENT' ? ` (${invoice.discountValue}%)` : ''}`}
               value={`− ${formatCurrency(invoice.discountAmount ?? 0)}`}
               color={C.red}
             />

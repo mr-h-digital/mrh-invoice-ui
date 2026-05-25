@@ -7,6 +7,7 @@ export const lineItemSchema = z.object({
   quantity: z.number().min(0.01, 'Quantity must be greater than 0'),
   unitPrice: z.number().min(0, 'Unit price must be 0 or more'),
   amount: z.number(),
+  sortOrder: z.number().default(0),
 });
 
 export const clientSnapshotSchema = z.object({
@@ -28,13 +29,15 @@ export const paymentDetailsSchema = z.object({
 
 export const invoiceFormSchema = z.object({
   invoiceNumber: z.string().min(1, 'Invoice number is required'),
-  status: z.enum(['draft', 'sent', 'paid', 'overdue']),
+  // Uppercase to match Java backend InvoiceStatus enum
+  status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE']),
   issueDate: z.string().min(1, 'Issue date is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   clientId: z.string().nullable(),
   clientSnapshot: clientSnapshotSchema,
   lineItems: z.array(lineItemSchema).min(1, 'At least one line item is required'),
-  discountType: z.enum(['amount', 'percent']).nullable(),
+  // Uppercase to match Java backend DiscountType enum
+  discountType: z.enum(['AMOUNT', 'PERCENT']).nullable(),
   discountValue: z.number().min(0),
   vatEnabled: z.boolean(),
   vatRate: z.number(),

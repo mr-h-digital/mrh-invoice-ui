@@ -2,10 +2,10 @@ import { clsx } from 'clsx';
 import type { InvoiceStatus } from '../../types/invoice';
 
 const statusConfig: Record<InvoiceStatus, { label: string; className: string }> = {
-  draft: { label: 'Draft', className: 'bg-brand-border text-brand-text' },
-  sent: { label: 'Sent', className: 'bg-blue-500/20 text-blue-400' },
-  paid: { label: 'Paid', className: 'bg-lime-dim text-lime' },
-  overdue: { label: 'Overdue', className: 'bg-red-500/20 text-red-400' },
+  DRAFT:   { label: 'Draft',   className: 'bg-brand-border text-brand-text' },
+  SENT:    { label: 'Sent',    className: 'bg-blue-500/20 text-blue-400' },
+  PAID:    { label: 'Paid',    className: 'bg-lime-dim text-lime' },
+  OVERDUE: { label: 'Overdue', className: 'bg-red-500/20 text-red-400' },
 };
 
 interface BadgeProps {
@@ -14,7 +14,7 @@ interface BadgeProps {
 }
 
 export function Badge({ status, className }: BadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] ?? statusConfig.DRAFT;
   return (
     <span
       className={clsx(

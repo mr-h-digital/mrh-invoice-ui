@@ -36,10 +36,14 @@ function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
   const unitPrice = useWatch({ control, name: `lineItems.${index}.unitPrice` });
   const amount    = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
-  // Sync computed amount — inside useEffect so it never fires during render
+  // Sync computed amount and sortOrder — inside useEffect so it never fires during render
   useEffect(() => {
     setValue(`lineItems.${index}.amount`, amount, { shouldDirty: true });
   }, [amount, index, setValue]);
+
+  useEffect(() => {
+    setValue(`lineItems.${index}.sortOrder`, index, { shouldDirty: true });
+  }, [index, setValue]);
 
   const style = { transform: CSS.Transform.toString(transform), transition };
 
@@ -196,7 +200,7 @@ export function LineItemsTable() {
 
       <button
         type="button"
-        onClick={() => append({ id: uuid(), name: '', description: '', quantity: 1, unitPrice: 0, amount: 0 })}
+        onClick={() => append({ id: uuid(), name: '', description: '', quantity: 1, unitPrice: 0, amount: 0, sortOrder: fields.length })}
         className="mt-4 flex items-center gap-2 text-sm text-lime hover:text-lime-dark transition-colors py-1"
       >
         <Plus size={15} />

@@ -2,8 +2,10 @@ import { z } from 'zod';
 
 export const clientFormSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
-  contactName: z.string(),
-  email: z.union([z.string().email('Invalid email address'), z.literal('')]),
+  // Backend @NotBlank — required
+  contactName: z.string().min(1, 'Contact name is required'),
+  // Backend @NotBlank @Email — required
+  email: z.string().email('Valid email is required'),
   phone: z.string(),
   address: z.string(),
 });

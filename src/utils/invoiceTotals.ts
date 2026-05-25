@@ -2,7 +2,7 @@ import type { LineItem } from '../types/invoice';
 
 interface TotalsInput {
   lineItems: LineItem[];
-  discountType: 'amount' | 'percent' | null;
+  discountType: 'AMOUNT' | 'PERCENT' | null;
   discountValue: number;
   vatEnabled: boolean;
   vatRate: number;
@@ -19,9 +19,9 @@ export function calculateTotals(input: TotalsInput): TotalsResult {
   const subtotal = input.lineItems.reduce((sum, item) => sum + item.amount, 0);
 
   let discountAmount = 0;
-  if (input.discountType === 'amount') {
+  if (input.discountType === 'AMOUNT') {
     discountAmount = Math.min(input.discountValue, subtotal);
-  } else if (input.discountType === 'percent') {
+  } else if (input.discountType === 'PERCENT') {
     discountAmount = (subtotal * input.discountValue) / 100;
   }
 
@@ -29,10 +29,5 @@ export function calculateTotals(input: TotalsInput): TotalsResult {
   const vatAmount = input.vatEnabled ? afterDiscount * input.vatRate : 0;
   const total = afterDiscount + vatAmount;
 
-  return {
-    subtotal,
-    discountAmount,
-    vatAmount,
-    total,
-  };
+  return { subtotal, discountAmount, vatAmount, total };
 }

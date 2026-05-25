@@ -5,12 +5,24 @@
 <h1 align="center">Mr. H Digital — Invoice Generator</h1>
 
 <p align="center">
-	<strong>Internal invoicing tool for managing clients, creating branded invoices, and tracking payments.</strong>
+	<strong>Production-ready React SPA for managing clients, creating branded invoices, and tracking payments.</strong>
 </p>
 
 <p align="center">
+	<a href="https://mr-h-digital.github.io/mrh-invoice-ui/">Live App</a>
+	·
+	<a href="https://github.com/mr-h-digital/mrh-invoice-ui/actions">Deployment Workflow</a>
+</p>
+
+<p align="center">
+	<a href="https://github.com/mr-h-digital/mrh-invoice-ui/actions">
+		<img src="https://img.shields.io/github/actions/workflow/status/mr-h-digital/mrh-invoice-ui/deploy-pages.yml?branch=main&label=deploy&logo=githubactions&logoColor=white" alt="Deploy Status" />
+	</a>
+	<a href="https://github.com/mr-h-digital/mrh-invoice-ui/commits/main">
+		<img src="https://img.shields.io/github/last-commit/mr-h-digital/mrh-invoice-ui?label=last%20commit" alt="Last Commit" />
+	</a>
 	<img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19" />
-	<img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+	<img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" alt="TypeScript 6" />
 	<img src="https://img.shields.io/badge/Tailwind_CSS-v4-AADB1E?logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
 	<img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite 8" />
 	<img src="https://img.shields.io/badge/license-proprietary-orange" alt="License" />
@@ -20,23 +32,25 @@
 
 ## Overview
 
-A full-featured single-page invoice generator built for Mr. H Digital's internal business operations. It handles the full invoicing lifecycle — from client management to branded PDF output — with a dark, on-brand UI.
+This is the frontend SPA for the Mr. H Digital Invoice Generator. It handles the complete invoicing lifecycle — splash screen, login, client address book, invoice creation with live preview, status management, and branded PDF export.
 
-All data is persisted to `localStorage` in the current phase. The service layer is architected for a clean swap to a REST backend without touching any UI code.
+Data is persisted to `localStorage` in the current phase. The service layer is built for a zero-friction swap to the Spring Boot BFF API — set `VITE_USE_API=true` in `.env.local` and all service calls route to the backend automatically.
 
-## Features
+## Highlights
 
-- **Dashboard** — at-a-glance stats for total invoiced, paid, outstanding, and overdue amounts with animated count-up on load
-- **Invoice management** — create, edit, duplicate, and delete invoices with status tracking (Draft → Sent → Paid / Overdue)
-- **Live preview** — two-panel editor with a real-time branded invoice render as you type
-- **Drag-to-reorder line items** — sortable rows with dnd-kit and Framer Motion layout animations
-- **Client address book** — save clients for quick selection when creating invoices; client data is snapshot at invoice time
-- **Auto-incrementing invoice numbers** — `INV-YYYY-NNN` format, scoped per year
-- **South African locale** — ZAR currency (`R 6,200.00`), SA date format (`22 May 2026`), 15% VAT toggle
-- **Discount support** — flat amount or percentage, applied before VAT
-- **Print / PDF export** — `window.print()` with light and dark print modes
-- **Page transitions** — Framer Motion `AnimatePresence` between routes
-- **Accessible** — keyboard navigation and focus management via Headless UI primitives
+- Branded splash screen with progress bar, terminal animation, and developer photo background
+- JWT-free admin login with session persistence across page refreshes
+- Dashboard with pre-aggregated stats from the backend (`/api/dashboard/stats`) with animated stat cards
+- Invoice list with status filter tabs, full-text search, and animated card grid
+- Two-panel invoice editor — form on the left, live branded preview on the right
+- Drag-to-reorder line items with `dnd-kit` and `sortOrder` synced to the backend
+- Real-time totals: subtotal → discount (flat or %) → 15% VAT → total due
+- Client address book with invoice count and total per client
+- Print / PDF export with togglable dark and light print modes
+- Mobile-first responsive layout with slide-over sidebar drawer on small screens
+- Skeleton loaders, empty states, confirm dialogs, and toast notifications throughout
+- Background images compressed 82% — total asset payload under 1.5 MB
+- Auto-deploys to GitHub Pages via GitHub Actions on every push to `main`
 
 ## Technology
 
@@ -45,9 +59,10 @@ All data is persisted to `localStorage` in the current phase. The service layer 
 | Framework | React 19 + TypeScript 6 (strict) |
 | Build | Vite 8 + `@tailwindcss/vite` |
 | Styling | Tailwind CSS v4 |
-| Routing | React Router v7 |
+| Routing | React Router v7 (HashRouter for GitHub Pages) |
 | State | Zustand |
 | Forms | React Hook Form + Zod |
+| HTTP | Axios (with `ApiResponse<T>` interceptor) |
 | Animation | Framer Motion v12 |
 | Drag & Drop | dnd-kit |
 | Toasts | Sonner |
@@ -61,17 +76,33 @@ All data is persisted to `localStorage` in the current phase. The service layer 
 mrh-web-ui-frontend/
 |- src/
 |  |- components/
-|  |  |- layout/         # AppShell, Sidebar, TopBar
+|  |  |- layout/         # AppShell (mobile drawer), Sidebar, TopBar, PageBackground
 |  |  |- invoice/        # InvoiceForm, InvoicePreview, LineItemsTable, InvoiceCard
 |  |  |- clients/        # ClientForm, ClientCard, ClientSelector
 |  |  |- shared/         # Modal, Badge, EmptyState, ConfirmDialog
-|  |- pages/             # Dashboard, Invoices, NewInvoice, EditInvoice, InvoiceDetail, Clients
+|  |  |- SplashScreen.tsx
+|  |- pages/
+|  |  |- LoginPage.tsx
+|  |  |- DashboardPage.tsx
+|  |  |- InvoicesPage.tsx
+|  |  |- NewInvoicePage.tsx
+|  |  |- EditInvoicePage.tsx
+|  |  |- InvoiceDetailPage.tsx
+|  |  |- ClientsPage.tsx
+|  |  |- NotFoundPage.tsx
 |  |- hooks/             # useInvoices, useClients, useLocalStorage, usePrint
-|  |- services/          # invoiceService, clientService  ← swap these for API calls
-|  |- store/             # invoiceStore, clientStore, uiStore (Zustand)
-|  |- schemas/           # invoiceSchema, clientSchema (Zod)
+|  |- services/
+|  |  |- api.ts          # Axios instance — unwraps ApiResponse<T> envelope
+|  |  |- invoiceService.ts   # localStorage ↔ API toggle via VITE_USE_API
+|  |  |- clientService.ts    # localStorage ↔ API toggle via VITE_USE_API
+|  |- store/             # invoiceStore, clientStore, authStore, uiStore (Zustand)
+|  |- schemas/           # invoiceSchema, clientSchema (Zod — mirrors backend enums)
 |  |- types/             # invoice.ts, client.ts, api.ts
-|  |- utils/             # formatCurrency, formatDate, generateInvoiceNumber, invoiceTotals
+|  |- utils/             # formatCurrency, formatDate, invoiceTotals
+|  |- assets/            # Compressed background images, logos
+|- .github/
+|  |- workflows/
+|     |- deploy-pages.yml
 |- assets/
 |  |- mrhdigital-logo.png
 |- .env.example
@@ -79,7 +110,12 @@ mrh-web-ui-frontend/
 |- package.json
 ```
 
-## Local Setup
+## Prerequisites
+
+- Node.js 20+
+- npm 10+
+
+## Quick Start
 
 Install dependencies:
 
@@ -95,74 +131,131 @@ npm run dev
 
 App runs at `http://localhost:5173`.
 
+**Login credentials:**
+
+```
+Email:    admin@mrhdigital.co.za
+Password: password
+```
+
+## Build & Preview
+
 Build for production:
 
 ```bash
 npm run build
 ```
 
-Preview the production build:
+Preview the production build locally:
 
 ```bash
 npm run preview
 ```
 
-## Environment
+## Environment Variables
 
-Copy `.env.example` to `.env.local` and set the API base URL for when the backend is ready:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_API_URL` | `http://localhost:8080/api` | Spring Boot BFF base URL |
+| `VITE_USE_API` | _(unset)_ | Set to `true` to route all service calls to the BFF instead of localStorage |
+| `VITE_APP_NAME` | `Mr. H Digital Invoice Generator` | App display name |
+
+Copy `.env.example` to `.env.local` to configure:
 
 ```bash
 cp .env.example .env.local
 ```
 
+## Connecting to the Backend
+
+Set both variables in `.env.local`:
+
 ```env
 VITE_API_URL=http://localhost:8080/api
+VITE_USE_API=true
 ```
 
-In the current localStorage phase this variable is unused. The `src/services/api.ts` Axios instance is configured and waiting.
+Start the Spring Boot BFF (`mrh-invoice-bff`) with Docker Compose, then run `npm run dev`. No other changes are needed — the service layer handles the switch transparently.
 
-## Swapping to a Real Backend
+### API alignment
 
-The service layer is the only thing that needs to change. Replace the localStorage implementations in:
+All enum values match the Java backend exactly:
 
-- `src/services/invoiceService.ts`
-- `src/services/clientService.ts`
+| Frontend type | Values |
+|---------------|--------|
+| `InvoiceStatus` | `DRAFT` · `SENT` · `PAID` · `OVERDUE` |
+| `DiscountType` | `AMOUNT` · `PERCENT` |
 
-with calls to the configured Axios instance in `src/services/api.ts`. All hooks, stores, and UI components remain untouched.
+The Axios interceptor in `src/services/api.ts` automatically unwraps the backend's `ApiResponse<T>` envelope so all service callers receive `T` directly.
+
+## API Endpoints Used
+
+| Endpoint | Used by |
+|----------|---------|
+| `GET /api/dashboard/stats` | Dashboard page — totals and recent invoices |
+| `GET /api/invoices` | Invoices list (paginated, filtered) |
+| `GET /api/invoices/next-number` | New Invoice page — auto-incremented number |
+| `POST /api/invoices` | Create invoice |
+| `GET /api/invoices/{id}` | Invoice detail / edit |
+| `PUT /api/invoices/{id}` | Save edited invoice |
+| `PATCH /api/invoices/{id}/status` | Mark paid / status change |
+| `POST /api/invoices/{id}/duplicate` | Duplicate invoice |
+| `DELETE /api/invoices/{id}` | Delete invoice |
+| `GET /api/clients` | Client selector + clients page |
+| `POST /api/clients` | Add client |
+| `PUT /api/clients/{id}` | Edit client |
+| `DELETE /api/clients/{id}` | Delete client (409 surfaced as toast) |
 
 ## Pre-seeded Data
 
-On first load the app seeds `localStorage` with:
+On first load (localStorage mode) the app seeds with:
 
 **Clients**
 
-- Timeline Vehicle Export Company (Pty) Ltd — Thabo Seabi
-- R.O.C.K. Mission Ministries — Pastor Chernay Hildebrandt
-- K&T Transport
+| Company | Contact | Email |
+|---------|---------|-------|
+| Timeline Vehicle Export Company (Pty) Ltd | Thabo Seabi | thabo@tveco.co.za |
+| R.O.C.K. Mission Ministries | Pastor Chernay Hildebrandt | info@rockmission.co.za |
+| K&T Transport | Contact | info@ktransport.co.za |
 
 **Invoices**
 
-- `INV-2026-001` — TVECO, status: Sent, total: R 6,200.00, due 1 June 2026
+`INV-2026-001` — TVECO, status: `SENT`, 5 line items, R 1,200 negotiated discount, total **R 6,200.00**, due 1 June 2026.
 
-## Brand
+## Brand Tokens
 
 | Token | Value |
 |-------|-------|
 | Lime | `#AADB1E` |
+| Dark | `#0F1013` |
 | Charcoal | `#16181D` |
 | Card | `#1E2128` |
+| Border | `#2E333D` |
+| Muted | `#5A6478` |
 | Text | `#B8C4D4` |
-| Display font | Syne 700/800 |
-| Mono font | Space Mono |
-| Body font | DM Sans 300/400/500 |
+| White | `#E8EDF5` |
+| Display font | Syne 700 / 800 |
+| Mono font | Space Mono 400 / 700 |
+| Body font | DM Sans 300 / 400 / 500 |
 
 ## Deployment
 
-The production build outputs a fully static bundle to `dist/`. It can be deployed to any static host:
+The GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) builds and deploys to GitHub Pages on every push to `main`.
+
+Manual deploy trigger:
+
+```
+Actions → Deploy to GitHub Pages → Run workflow
+```
+
+The app is served at `https://mr-h-digital.github.io/mrh-invoice-ui/`.
+
+To deploy to other platforms:
 
 - **Vercel** — connect repo, framework preset: Vite
 - **Netlify** — connect repo, publish directory: `dist`, build command: `npm run build`
-- **GitHub Pages** — build and push `dist/` to a `gh-pages` branch
+
+> **Note:** When deploying to Vercel or Netlify, switch `HashRouter` back to `BrowserRouter` in `src/App.tsx` and remove `base: '/mrh-invoice-ui/'` from `vite.config.ts` — those settings exist only for the GitHub Pages subdirectory path.
 
 ---
 
@@ -175,5 +268,5 @@ The production build outputs a fully static bundle to `dist/`. It can be deploye
 </p>
 
 <p align="center">
-	Designed and developed by <a href="https://mrhdigital.co.za"><strong>Mr. H Digital</strong></a>
+	Designed and developed by <a href="https://mrhdigital.co.za" target="_blank" rel="noopener noreferrer"><strong>Mr. H Digital</strong></a>
 </p>

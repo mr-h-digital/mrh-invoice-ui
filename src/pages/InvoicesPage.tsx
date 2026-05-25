@@ -14,10 +14,10 @@ import invoicesBg from '../assets/invoices-bg.jpg';
 
 const TABS: { label: string; value: InvoiceStatus | 'all' }[] = [
   { label: 'All',     value: 'all'     },
-  { label: 'Draft',   value: 'draft'   },
-  { label: 'Sent',    value: 'sent'    },
-  { label: 'Paid',    value: 'paid'    },
-  { label: 'Overdue', value: 'overdue' },
+  { label: 'Draft',   value: 'DRAFT'   },
+  { label: 'Sent',    value: 'SENT'    },
+  { label: 'Paid',    value: 'PAID'    },
+  { label: 'Overdue', value: 'OVERDUE' },
 ];
 
 export function InvoicesPage() {

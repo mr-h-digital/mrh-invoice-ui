@@ -1,4 +1,6 @@
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue';
+// Enum values match the Java backend exactly (uppercase)
+export type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE';
+export type DiscountType   = 'AMOUNT' | 'PERCENT';
 
 export interface LineItem {
   id: string;
@@ -7,6 +9,7 @@ export interface LineItem {
   quantity: number;
   unitPrice: number;
   amount: number;
+  sortOrder: number;
 }
 
 export interface ClientSnapshot {
@@ -36,7 +39,7 @@ export interface Invoice {
   clientSnapshot: ClientSnapshot;
   lineItems: LineItem[];
   subtotal: number;
-  discountType: 'amount' | 'percent' | null;
+  discountType: DiscountType | null;
   discountValue: number;
   discountAmount: number;
   vatEnabled: boolean;

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TrendingUp, DollarSign, Clock, AlertCircle, Plus, ArrowRight } from 'lucide-react';
@@ -9,6 +10,19 @@ import { PageBackground } from '../components/layout/PageBackground';
 import { formatCurrency } from '../utils/formatCurrency';
 import { formatDateShort } from '../utils/formatDate';
 import dashboardBg from '../assets/dashboard-bg.jpg';
+import api from '../services/api';
+import type { Invoice } from '../types/invoice';
+
+const USE_API = import.meta.env.VITE_USE_API === 'true';
+
+interface DashboardStats {
+  totalInvoiced: number;
+  totalPaid: number;
+  totalOutstanding: number;
+  totalOverdue: number;
+  invoiceCount: number;
+  recentInvoices: Invoice[];
+}
 
 function StatCard({ label, value, icon: Icon, color, delay }: {
   label: string; value: number; icon: React.ElementType; color: string; delay: number;
@@ -33,17 +47,30 @@ function StatCard({ label, value, icon: Icon, color, delay }: {
 }
 
 export function DashboardPage() {
-  const { invoices, loading } = useInvoices();
+  const { invoices, loading: invoicesLoading } = useInvoices();
   useClients();
 
-  const totalInvoiced = invoices.reduce((s, i) => s + i.total, 0);
-  const paid         = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.total, 0);
-  const outstanding  = invoices.filter((i) => i.status === 'sent').reduce((s, i) => s + i.total, 0);
-  const overdue      = invoices.filter((i) => i.status === 'overdue').reduce((s, i) => s + i.total, 0);
+  const [apiStats, setApiStats] = useState<DashboardStats | null>(null);
 
-  const recent = [...invoices]
+  // When API mode is active, fetch pre-aggregated stats from the backend
+  useEffect(() => {
+    if (!USE_API) return;
+    api.get<DashboardStats>('/dashboard/stats')
+      .then((res) => setApiStats(res.data))
+      .catch(() => { /* fall back to client-side calculation */ });
+  }, []);
+
+  // Stats — use API response if available, otherwise derive from local store
+  const totalInvoiced = apiStats?.totalInvoiced ?? invoices.reduce((s, i) => s + i.total, 0);
+  const paid          = apiStats?.totalPaid ?? invoices.filter((i) => i.status === 'PAID').reduce((s, i) => s + i.total, 0);
+  const outstanding   = apiStats?.totalOutstanding ?? invoices.filter((i) => i.status === 'SENT').reduce((s, i) => s + i.total, 0);
+  const overdue       = apiStats?.totalOverdue ?? invoices.filter((i) => i.status === 'OVERDUE').reduce((s, i) => s + i.total, 0);
+
+  const recent = apiStats?.recentInvoices ?? [...invoices]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  const loading = invoicesLoading && !apiStats;
 
   const stats = [
     { label: 'Total Invoiced', value: totalInvoiced, icon: TrendingUp,  color: '#AADB1E', delay: 0    },
@@ -67,12 +94,10 @@ export function DashboardPage() {
       />
 
       <div className="p-4 sm:p-6 lg:p-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {stats.map((s) => <StatCard key={s.label} {...s} />)}
         </div>
 
-        {/* Recent invoices */}
         <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-brand-border">
             <h2 className="font-display font-bold text-brand-white text-sm sm:text-base">Recent Invoices</h2>

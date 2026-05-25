@@ -81,10 +81,10 @@ export function InvoiceForm() {
           <div>
             <label className="field-label">Status</label>
             <select {...register('status')} className="input-field">
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
+              <option value="DRAFT">Draft</option>
+              <option value="SENT">Sent</option>
+              <option value="PAID">Paid</option>
+              <option value="OVERDUE">Overdue</option>
             </select>
           </div>
           <div>
@@ -165,15 +165,15 @@ export function InvoiceForm() {
             <div className="flex gap-2">
               <select {...register('discountType')} className="input-field w-36">
                 <option value="">None</option>
-                <option value="amount">Amount (R)</option>
-                <option value="percent">Percent (%)</option>
+                <option value="AMOUNT">Amount (R)</option>
+                <option value="PERCENT">Percent (%)</option>
               </select>
               {discountType && (
                 <input
                   {...register('discountValue', { valueAsNumber: true })}
                   type="number" min="0" step="0.01"
                   className="input-field flex-1"
-                  placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 500'}
+                  placeholder={discountType === 'PERCENT' ? 'e.g. 10' : 'e.g. 500'}
                 />
               )}
             </div>

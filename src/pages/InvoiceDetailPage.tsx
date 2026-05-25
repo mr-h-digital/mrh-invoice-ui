@@ -66,8 +66,8 @@ export function InvoiceDetailPage() {
 
             {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-2">
-              {invoice.status !== 'paid' && (
-                <button onClick={() => handleStatusChange('paid')} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-lime/10 text-lime border border-lime/25 rounded-lg hover:bg-lime/20 transition-colors">
+              {invoice.status !== 'PAID' && (
+                <button onClick={() => handleStatusChange('PAID')} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-lime/10 text-lime border border-lime/25 rounded-lg hover:bg-lime/20 transition-colors">
                   <CheckCircle size={13} /> Mark Paid
                 </button>
               )}
@@ -77,10 +77,10 @@ export function InvoiceDetailPage() {
                 className="bg-brand-card border border-brand-border text-brand-text text-xs rounded-lg px-2 py-1.5"
                 aria-label="Change status"
               >
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="paid">Paid</option>
-                <option value="overdue">Overdue</option>
+                <option value="DRAFT">Draft</option>
+                <option value="SENT">Sent</option>
+                <option value="PAID">Paid</option>
+                <option value="OVERDUE">Overdue</option>
               </select>
               <button onClick={() => setDarkPrint((v) => !v)} title={darkPrint ? 'Light print' : 'Dark print'} aria-label={darkPrint ? 'Switch to light print' : 'Switch to dark print'} className="p-1.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-card border border-brand-border transition-colors">
                 {darkPrint ? <Moon size={15} /> : <Sun size={15} />}
@@ -116,8 +116,8 @@ export function InvoiceDetailPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setMobileMenuOpen(false)} />
                     <div className="absolute right-0 top-full mt-1 w-44 bg-brand-card2 border border-brand-border rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
-                      {invoice.status !== 'paid' && (
-                        <button onClick={() => { handleStatusChange('paid'); setMobileMenuOpen(false); }} className="flex items-center gap-2 px-4 py-3 text-sm text-lime w-full text-left hover:bg-brand-border transition-colors">
+                      {invoice.status !== 'PAID' && (
+                        <button onClick={() => { handleStatusChange('PAID'); setMobileMenuOpen(false); }} className="flex items-center gap-2 px-4 py-3 text-sm text-lime w-full text-left hover:bg-brand-border transition-colors">
                           <CheckCircle size={14} /> Mark Paid
                         </button>
                       )}
