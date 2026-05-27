@@ -9,7 +9,7 @@ interface TopBarProps {
 export function TopBar({ title, subtitle, actions }: TopBarProps) {
   return (
     <div
-      className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-brand-border/60 sticky top-0 z-10 print:hidden overflow-hidden"
+      className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-brand-border/60 sticky top-0 z-30 print:hidden"
       style={{ backgroundImage: `url(${navBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className="absolute inset-0 bg-brand-dark/80 backdrop-blur-sm pointer-events-none" />
