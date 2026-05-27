@@ -12,7 +12,7 @@ export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-brand-dark">
+    <div className="flex min-h-screen print:min-h-0 bg-brand-dark print:bg-transparent">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar />
@@ -48,7 +48,7 @@ export function AppShell({ children }: AppShellProps) {
       <main className="flex-1 min-w-0 flex flex-col">
         {/* Mobile top bar with hamburger */}
         <div
-          className="flex items-center justify-between px-4 py-3 border-b border-brand-border/60 lg:hidden print:hidden sticky top-0 z-30"
+          className="flex items-center justify-between px-4 py-3 border-b border-brand-border/60 lg:hidden print:hidden"
           style={{ backgroundImage: `url(${navBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
           <div className="absolute inset-0 bg-brand-charcoal/85 pointer-events-none" />
