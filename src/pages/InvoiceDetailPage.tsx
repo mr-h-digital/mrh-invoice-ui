@@ -144,7 +144,7 @@ export function InvoiceDetailPage() {
         }
       />
 
-      <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full">
+      <div className="invoice-detail-page-wrapper p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full">
         <Link to="/invoices" className="flex items-center gap-1.5 text-sm text-brand-muted hover:text-lime transition-colors mb-6 print:hidden">
           <ArrowLeft size={14} /> Back to invoices
         </Link>
