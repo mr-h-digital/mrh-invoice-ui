@@ -51,6 +51,7 @@ export function InvoicePrintLayout({ invoice }: Props) {
     <div id="invoice-print-area" style={{
       fontFamily: sans, color: ink,
       background: white, width: '100%',
+      zoom: 0.88,
     }}>
 
       {/* ══ HEADER — dark brand band ═══════════════════════════════════════ */}
@@ -182,102 +183,107 @@ export function InvoicePrintLayout({ invoice }: Props) {
         ))}
       </div>
 
-      {/* ══ TOTALS — right-aligned ════════════════════════════════════════ */}
-      <div style={{ padding: '16px 36px 24px', display: 'flex', justifyContent: 'flex-end' }}>
-        <div style={{ width: 260 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: `1px solid ${rule}` }}>
-            <span style={{ fontSize: 12, color: muted }}>Subtotal</span>
-            <span style={{ fontFamily: mono, fontSize: 12, color: ink }}>{formatCurrency(invoice.subtotal)}</span>
+      {/* ══ TOTALS + PAYMENT + FOOTER — single block, never split across pages ══ */}
+      <div style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+
+        {/* Totals — right-aligned */}
+        <div style={{ padding: '16px 36px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ width: 260 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${rule}` }}>
+              <span style={{ fontSize: 12, color: muted }}>Subtotal</span>
+              <span style={{ fontFamily: mono, fontSize: 12, color: ink }}>{formatCurrency(invoice.subtotal)}</span>
+            </div>
+
+            {(invoice.discountAmount ?? 0) > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${rule}` }}>
+                <span style={{ fontSize: 12, color: muted }}>
+                  Discount{invoice.discountType === 'PERCENT' ? ` (${invoice.discountValue}%)` : ''}
+                </span>
+                <span style={{ fontFamily: mono, fontSize: 12, color: '#B91C1C' }}>
+                  − {formatCurrency(invoice.discountAmount)}
+                </span>
+              </div>
+            )}
+
+            {invoice.vatEnabled && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${rule}` }}>
+                <span style={{ fontSize: 12, color: muted }}>VAT ({((invoice.vatRate ?? 0.15) * 100).toFixed(0)}%)</span>
+                <span style={{ fontFamily: mono, fontSize: 12, color: ink }}>{formatCurrency(invoice.vatAmount)}</span>
+              </div>
+            )}
+
+            {/* Total due — dark band, lime text */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '12px 16px', marginTop: 10,
+              background: dark, borderRadius: 5,
+            }}>
+              <span style={{ fontFamily: syne, fontWeight: 700, fontSize: 13, color: lime, letterSpacing: 0.3 }}>
+                TOTAL DUE
+              </span>
+              <span style={{ fontFamily: mono, fontWeight: 700, fontSize: 19, color: lime }}>
+                {formatCurrency(invoice.total)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment details + terms — NO overflow:hidden (breaks page rendering) */}
+        <div style={{
+          margin: '0 36px 20px',
+          border: `1px solid ${rule}`,
+          borderRadius: 5,
+          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          background: bgGray,
+        }}>
+          <div style={{ padding: '16px 20px', borderRight: `1px solid ${rule}` }}>
+            {label('Payment Details')}
+            {[
+              ['Bank',         invoice.paymentDetails?.bank],
+              ['Account Name', invoice.paymentDetails?.accountName],
+              ['Account No.',  invoice.paymentDetails?.accountNumber],
+              ['Account Type', invoice.paymentDetails?.accountType],
+              ['Branch Code',  invoice.paymentDetails?.branchCode],
+              ['Reference',    invoice.paymentDetails?.reference || invoice.invoiceNumber],
+              ['Due Date',     formatDate(invoice.dueDate)],
+            ].filter(([, v]) => v).map(([l, v]) => (
+              <div key={l as string} style={{ display: 'flex', gap: 8, fontSize: 11, marginBottom: 3 }}>
+                <span style={{ fontWeight: 600, color: ink, minWidth: 86, flexShrink: 0 }}>{l}</span>
+                <span style={{ color: sub }}>{v}</span>
+              </div>
+            ))}
           </div>
 
-          {(invoice.discountAmount ?? 0) > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: `1px solid ${rule}` }}>
-              <span style={{ fontSize: 12, color: muted }}>
-                Discount{invoice.discountType === 'PERCENT' ? ` (${invoice.discountValue}%)` : ''}
-              </span>
-              <span style={{ fontFamily: mono, fontSize: 12, color: '#B91C1C' }}>
-                − {formatCurrency(invoice.discountAmount)}
-              </span>
-            </div>
-          )}
-
-          {invoice.vatEnabled && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: `1px solid ${rule}` }}>
-              <span style={{ fontSize: 12, color: muted }}>VAT ({((invoice.vatRate ?? 0.15) * 100).toFixed(0)}%)</span>
-              <span style={{ fontFamily: mono, fontSize: 12, color: ink }}>{formatCurrency(invoice.vatAmount)}</span>
-            </div>
-          )}
-
-          {/* Total due — dark band with lime text */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '14px 18px', marginTop: 12,
-            background: dark, borderRadius: 6,
-          }}>
-            <span style={{ fontFamily: syne, fontWeight: 700, fontSize: 13, color: lime, letterSpacing: 0.3 }}>
-              TOTAL DUE
-            </span>
-            <span style={{ fontFamily: mono, fontWeight: 700, fontSize: 20, color: lime }}>
-              {formatCurrency(invoice.total)}
-            </span>
+          <div style={{ padding: '16px 20px' }}>
+            {label('Payment Terms')}
+            <p style={{ fontSize: 11, color: sub, lineHeight: 1.7, margin: '0 0 8px' }}>
+              {invoice.notes || 'Payment in full by the due date. Please use the invoice number as your payment reference.'}
+            </p>
+            <p style={{ fontSize: 11, color: muted, margin: 0 }}>
+              Proof of payment to{' '}
+              <span style={{ color: '#1D4ED8' }}>info@mrhdigital.co.za</span>
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* ══ PAYMENT DETAILS + TERMS — light grey card ════════════════════ */}
-      <div style={{
-        margin: '0 36px 24px',
-        background: bgGray, border: `1px solid ${rule}`,
-        borderRadius: 6,
-        display: 'grid', gridTemplateColumns: '1fr 1fr',
-        overflow: 'hidden',
-      }}>
-        <div style={{ padding: '18px 22px', borderRight: `1px solid ${rule}` }}>
-          {label('Payment Details')}
-          {[
-            ['Bank',        invoice.paymentDetails?.bank],
-            ['Account Name', invoice.paymentDetails?.accountName],
-            ['Account No.',  invoice.paymentDetails?.accountNumber],
-            ['Account Type', invoice.paymentDetails?.accountType],
-            ['Branch Code',  invoice.paymentDetails?.branchCode],
-            ['Reference',    invoice.paymentDetails?.reference || invoice.invoiceNumber],
-            ['Due Date',     formatDate(invoice.dueDate)],
-          ].filter(([, v]) => v).map(([l, v]) => (
-            <div key={l as string} style={{ display: 'flex', gap: 8, fontSize: 11, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: ink, minWidth: 88, flexShrink: 0 }}>{l}</span>
-              <span style={{ color: sub }}>{v}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ padding: '18px 22px' }}>
-          {label('Payment Terms')}
-          <p style={{ fontSize: 11, color: sub, lineHeight: 1.7, margin: '0 0 10px' }}>
-            {invoice.notes || 'Payment in full by the due date. Please use the invoice number as your payment reference.'}
-          </p>
-          <p style={{ fontSize: 11, color: muted, margin: 0 }}>
-            Proof of payment to{' '}
-            <span style={{ color: '#1D4ED8' }}>info@mrhdigital.co.za</span>
-          </p>
-        </div>
-      </div>
-
-      {/* ══ FOOTER ════════════════════════════════════════════════════════ */}
-      <div style={{
-        borderTop: `1px solid ${rule}`,
-        padding: '14px 36px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src={logoGreen} alt="Mr. H Digital" style={{ height: 20, width: 'auto', opacity: 0.6 }} />
-          <span style={{ fontFamily: mono, fontSize: 9, color: muted }}>
-            Mr. H Digital &nbsp;·&nbsp; <span style={{ color: '#1D4ED8' }}>mrhdigital.co.za</span>
+        {/* Footer */}
+        <div style={{
+          borderTop: `1px solid ${rule}`,
+          padding: '12px 36px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src={logoGreen} alt="Mr. H Digital" style={{ height: 18, width: 'auto', opacity: 0.6 }} />
+            <span style={{ fontFamily: mono, fontSize: 9, color: muted }}>
+              Mr. H Digital &nbsp;·&nbsp; <span style={{ color: '#1D4ED8' }}>mrhdigital.co.za</span>
+            </span>
+          </div>
+          <span style={{ fontFamily: sans, fontSize: 10, color: muted, fontStyle: 'italic' }}>
+            Cape Town, South Africa
           </span>
         </div>
-        <span style={{ fontFamily: sans, fontSize: 10, color: muted, fontStyle: 'italic' }}>
-          Cape Town, South Africa
-        </span>
-      </div>
+
+      </div>{/* end break-inside block */}
 
     </div>
   );
