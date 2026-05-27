@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Pencil, Copy, CheckCircle, Trash2, Printer, ArrowLeft, Sun, Moon, MoreVertical } from 'lucide-react';
 import { InvoicePreview } from '../components/invoice/InvoicePreview';
+import { InvoicePrintLayout } from '../components/invoice/InvoicePrintLayout';
 import { Badge } from '../components/shared/Badge';
 import { ConfirmDialog } from '../components/shared/ConfirmDialog';
 import { TopBar } from '../components/layout/TopBar';
@@ -148,8 +149,15 @@ export function InvoiceDetailPage() {
         <Link to="/invoices" className="flex items-center gap-1.5 text-sm text-brand-muted hover:text-lime transition-colors mb-6 print:hidden">
           <ArrowLeft size={14} /> Back to invoices
         </Link>
-        <div id="invoice-print-area">
+
+        {/* Screen preview — hidden on print */}
+        <div className="print:hidden">
           <InvoicePreview invoice={invoice} darkPrint={darkPrint} />
+        </div>
+
+        {/* Print layout — only visible when printing (hybrid dark header / white body) */}
+        <div className="hidden print:block">
+          <InvoicePrintLayout invoice={invoice} />
         </div>
       </div>
 

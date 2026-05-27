@@ -112,63 +112,47 @@
 
 /* ═══════════════════════════════════════════════════════════════════════
    PRINT STYLES
-   Dark print = .dark-print class on .invoice-preview (default toggle state).
-   Light print = no .dark-print class (Moon/Sun toggle switched to white).
+   InvoicePrintLayout is the dedicated print component — clean hybrid layout.
+   These rules just ensure the shell/chrome doesn't interfere.
    ═══════════════════════════════════════════════════════════════════════ */
 @media print {
 
-  /* ── 1. Page setup ── */
+  /* ── 1. A4 page ── */
   @page {
     size: A4 portrait;
-    margin: 6mm 5mm;
+    margin: 8mm 6mm;
   }
 
-  /* ── 2. Collapse ALL height and overflow constraints ──
-     overflow-y:auto on <main> clips the scroll container to viewport height
-     when printing — the browser only prints what's in the visible scroll area.
-     min-h-screen forces containers taller than A4, causing blank page 2.    */
+  /* ── 2. Collapse all height / overflow constraints ──
+     overflow-y:auto clips scroll containers to viewport height on print.
+     min-h-screen pushes content onto page 2 with a blank gap.            */
   html, body, #root,
   body > div, body > div > div,
-  main, .flex-1,
-  [class*="overflow-y"],
-  [class*="overflow-x"] {
+  main, .flex-1 {
     min-height: 0 !important;
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
   }
 
-  /* ── 3. Strip body chrome ── */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    background: transparent !important;
+    background: #ffffff !important;
   }
 
-  /* ── 4. Hide ALL UI chrome including toasts, sidebar, nav ── */
+  /* ── 3. Hide all UI chrome ── */
   .print\:hidden,
-  nav,
-  aside,
-  header,
+  nav, aside, header,
   .inv-watermark,
-  [data-sonner-toaster],
-  [data-sonner-toast],
-  /* Mobile hamburger bar */
-  .lg\:hidden.print\:hidden,
-  /* PageBackground overlay and bg image divs */
+  [data-sonner-toaster], [data-sonner-toast],
   .animate-bg-fade,
-  /* Any fixed/absolute UI that isn't the invoice itself */
   body > div:not(#root) {
     display: none !important;
   }
 
-  /* ── 5. PageBackground — remove decorative backgrounds on print ── */
-  .flex-1.relative.flex.flex-col.bg-brand-dark {
-    background: transparent !important;
-  }
-
-  /* ── 6. Page wrapper — full width, no gutters ── */
+  /* ── 4. Strip decorative backgrounds from page wrappers ── */
   .invoice-detail-page-wrapper {
     padding: 0 !important;
     max-width: 100% !important;
@@ -176,86 +160,15 @@
     width: 100% !important;
   }
 
-  #invoice-print-area {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    /* Scale down so payment section fits on the same page as line items.
-       0.82 ≈ A4 printable width / typical screen render width.           */
-    zoom: 0.82;
-  }
-
-  /* ── 7. Invoice card — flat document, no shadow, full width ── */
-  .invoice-preview {
+  /* ── 5. Force all inline backgrounds and colours to print ── */
+  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-    page-break-inside: auto;
   }
 
-  /* Avoid breaking individual line item rows across pages */
-  .invoice-preview > div > div {
-    page-break-inside: avoid;
+  /* ── 6. Line items don't break across pages ── */
+  #invoice-print-area > div > div {
     break-inside: avoid;
-  }
-
-  /* ── 8. DARK PRINT — branded theme preserved ── */
-  .invoice-preview.dark-print,
-  .invoice-preview.dark-print * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  body:has(.invoice-preview.dark-print) {
-    background: #0F1013 !important;
-  }
-
-  /* ── 9. LIGHT PRINT — clean white with brand accents ── */
-  .invoice-preview:not(.dark-print) {
-    background: #ffffff !important;
-    color: #111827 !important;
-  }
-
-  body:has(.invoice-preview:not(.dark-print)) {
-    background: #ffffff !important;
-  }
-
-  /* Strip all dark section backgrounds */
-  .invoice-preview:not(.dark-print) div,
-  .invoice-preview:not(.dark-print) table,
-  .invoice-preview:not(.dark-print) td,
-  .invoice-preview:not(.dark-print) th {
-    background-color: transparent !important;
-  }
-
-  /* Near-black text */
-  .invoice-preview:not(.dark-print) p,
-  .invoice-preview:not(.dark-print) span,
-  .invoice-preview:not(.dark-print) div {
-    color: #1f2937 !important;
-  }
-
-  /* Lime section labels → deep green on white */
-  .invoice-preview:not(.dark-print) p[style*="#AADB1E"],
-  .invoice-preview:not(.dark-print) p[style*="rgb(170, 219, 30)"],
-  .invoice-preview:not(.dark-print) span[style*="#AADB1E"],
-  .invoice-preview:not(.dark-print) span[style*="rgb(170, 219, 30)"] {
-    color: #4a6e00 !important;
-  }
-
-  /* Solid lime total block — force background to print */
-  .invoice-preview:not(.dark-print) div[style*="background: rgb(170, 219, 30)"],
-  .invoice-preview:not(.dark-print) div[style*="background-color: rgb(170, 219, 30)"] {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    background: #AADB1E !important;
-  }
-
-  /* Subtle borders on white */
-  .invoice-preview:not(.dark-print) [style*="border"] {
-    border-color: #d1d5db !important;
+    page-break-inside: avoid;
   }
 }
