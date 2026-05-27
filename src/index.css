@@ -110,55 +110,94 @@
   }
 }
 
-/* Print styles */
+/* ═══════════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   Default = dark branded output (matches what you see on screen).
+   Add class "dark-print" to .invoice-preview for dark mode.
+   Without the class (light mode toggle OFF) = clean white PDF.
+   ═══════════════════════════════════════════════════════════════════════ */
 @media print {
+  /* Hide all UI chrome */
   .print\:hidden,
   nav,
   aside,
-  header {
+  header,
+  .inv-watermark {
     display: none !important;
   }
 
-  /* Force all backgrounds and colours to actually print */
-  .invoice-preview {
+  /* ── DARK PRINT (default — class .dark-print present) ───────────────
+     Force every background, border, and colour to render exactly as
+     it appears on screen. Without this browsers strip backgrounds.     */
+  .invoice-preview.dark-print {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .invoice-preview.dark-print * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* ── Dark print (default) — preserve brand colours ── */
-  body {
+  body:has(.invoice-preview.dark-print) {
     background: #0F1013 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* Hide the "INV" watermark in dark print too — it doesn't reproduce
-     well at print resolution and can bleed over text on some printers */
-  .inv-watermark {
-    display: none !important;
-  }
-
-  /* ── Light print override ── */
+  /* ── LIGHT PRINT (default when toggle is OFF — no .dark-print class) ─
+     Clean white output: strip dark backgrounds, keep brand accents.   */
   .invoice-preview:not(.dark-print) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
     background: #ffffff !important;
     color: #111827 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
   }
 
-  /* Cascade text/border reset for light mode — excludes the watermark
-     (already hidden) so it can't bleed through as solid black */
-  .invoice-preview:not(.dark-print) div:not(.inv-watermark),
-  .invoice-preview:not(.dark-print) p,
-  .invoice-preview:not(.dark-print) span {
-    color: #111827 !important;
+  /* Reset all dark backgrounds to white */
+  .invoice-preview:not(.dark-print) div,
+  .invoice-preview:not(.dark-print) table,
+  .invoice-preview:not(.dark-print) td,
+  .invoice-preview:not(.dark-print) th {
     background-color: transparent !important;
-    border-color: #d1d5db !important;
   }
 
-  /* Keep lime section labels legible in light mode */
-  .invoice-preview:not(.dark-print) .inv-section-label {
+  /* Reset text to near-black */
+  .invoice-preview:not(.dark-print) p,
+  .invoice-preview:not(.dark-print) span,
+  .invoice-preview:not(.dark-print) div {
+    color: #1f2937 !important;
+  }
+
+  /* Keep lime accents on section labels — they look great on white */
+  .invoice-preview:not(.dark-print) p[style*="color: rgb(170, 219, 30)"],
+  .invoice-preview:not(.dark-print) p[style*="color: #AADB1E"],
+  .invoice-preview:not(.dark-print) span[style*="color: rgb(170, 219, 30)"],
+  .invoice-preview:not(.dark-print) span[style*="color: #AADB1E"] {
     color: #5a7a00 !important;
+  }
+
+  /* Keep lime total block — print it as a solid lime strip */
+  .invoice-preview:not(.dark-print) [style*="background: #AADB1E"],
+  .invoice-preview:not(.dark-print) [style*="background: rgb(170, 219, 30)"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: #AADB1E !important;
+  }
+
+  /* Borders in light mode */
+  .invoice-preview:not(.dark-print) [style*="border"] {
+    border-color: #e5e7eb !important;
+  }
+
+  body:has(.invoice-preview:not(.dark-print)) {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   #invoice-print-area {
@@ -167,6 +206,7 @@
   }
 
   @page {
-    margin: 10mm;
+    size: A4 portrait;
+    margin: 12mm 10mm;
   }
 }

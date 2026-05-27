@@ -35,7 +35,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4">
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-200"
@@ -47,7 +47,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             >
               <DialogPanel
                 className={clsx(
-                  'w-full rounded-xl border shadow-2xl',
+                  'w-full border shadow-2xl rounded-t-xl sm:rounded-xl',
                   sizeClasses[size]
                 )}
                 style={{ background: '#1E2128', borderColor: '#2E333D' }}

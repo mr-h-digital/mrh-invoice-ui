@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm, FormProvider, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { invoiceFormSchema, type InvoiceFormValues } from '../schemas/invoiceSchema';
 import { InvoiceForm } from '../components/invoice/InvoiceForm';
 import { InvoicePreview } from '../components/invoice/InvoicePreview';
@@ -109,6 +109,13 @@ export function NewInvoicePage() {
                   </button>
                 ))}
               </div>
+              <Link
+                to="/invoices"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-brand-border text-brand-muted text-sm hover:text-brand-text hover:bg-brand-card2 transition-colors"
+              >
+                <X size={15} />
+                <span className="hidden sm:inline">Cancel</span>
+              </Link>
               <button
                 onClick={methods.handleSubmit(onSubmit)}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-lime text-brand-dark text-sm font-medium rounded-lg hover:bg-lime-dark transition-colors"
@@ -127,11 +134,7 @@ export function NewInvoicePage() {
           </div>
           <div className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-4 sm:p-6 ${activeTab === 'form' ? 'hidden lg:block' : ''}`}>
             <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">Live Preview</p>
-            <div className="overflow-x-auto">
-              <div style={{ minWidth: 600 }}>
-                <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
-              </div>
-            </div>
+            <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
           </div>
         </div>
       </PageBackground>

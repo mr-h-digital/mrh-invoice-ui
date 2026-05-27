@@ -20,7 +20,8 @@ export function InvoiceDetailPage() {
   const { print } = usePrint();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [darkPrint, setDarkPrint] = useState(false);
+  // true = dark branded print (default), false = clean white print
+  const [darkPrint, setDarkPrint] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!invoice) {
@@ -147,10 +148,8 @@ export function InvoiceDetailPage() {
         <Link to="/invoices" className="flex items-center gap-1.5 text-sm text-brand-muted hover:text-lime transition-colors mb-6 print:hidden">
           <ArrowLeft size={14} /> Back to invoices
         </Link>
-        <div id="invoice-print-area" className="overflow-x-auto">
-          <div style={{ minWidth: 600 }}>
-            <InvoicePreview invoice={invoice} darkPrint={darkPrint} />
-          </div>
+        <div id="invoice-print-area">
+          <InvoicePreview invoice={invoice} darkPrint={darkPrint} />
         </div>
       </div>
 

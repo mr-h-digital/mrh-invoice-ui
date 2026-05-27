@@ -26,7 +26,7 @@ export function ClientCard({ client, invoices, onEdit, onDelete }: ClientCardPro
         <div className="flex gap-1 shrink-0">
           <button
             onClick={() => onEdit(client)}
-            className="p-1.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-card2 transition-colors"
+            className="p-2.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-card2 transition-colors"
           >
             <Pencil size={15} />
           </button>

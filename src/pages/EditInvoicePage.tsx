@@ -118,11 +118,7 @@ export function EditInvoicePage() {
           </div>
           <div className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-4 sm:p-6 ${activeTab === 'form' ? 'hidden lg:block' : ''}`}>
             <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">Live Preview</p>
-            <div className="overflow-x-auto">
-              <div style={{ minWidth: 600 }}>
-                <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
-              </div>
-            </div>
+            <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
           </div>
         </div>
       </PageBackground>
