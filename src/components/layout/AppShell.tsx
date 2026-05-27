@@ -13,21 +13,18 @@ function ScrollHint({ container }: { container: React.RefObject<HTMLElement | nu
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const el = container.current;
-    if (!el) return;
-
-    // Only show if content actually overflows
+    // Watch the document scroll (main no longer has overflow-y-auto)
     const check = () => {
-      const overflows = el.scrollHeight > el.clientHeight + 8;
-      const atTop = el.scrollTop < 10;
-      setVisible(overflows && atTop);
+      const pageOverflows = document.documentElement.scrollHeight > window.innerHeight + 8;
+      const atTop = window.scrollY < 10;
+      setVisible(pageOverflows && atTop);
     };
 
     check();
-    el.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('scroll', check, { passive: true });
     window.addEventListener('resize', check);
     return () => {
-      el.removeEventListener('scroll', check);
+      window.removeEventListener('scroll', check);
       window.removeEventListener('resize', check);
     };
   }, [container]);
@@ -92,7 +89,7 @@ export function AppShell({ children }: AppShellProps) {
         )}
       </AnimatePresence>
 
-      <main ref={mainRef} className="flex-1 min-w-0 flex flex-col overflow-y-auto lg:overflow-visible">
+      <main ref={mainRef} className="flex-1 min-w-0 flex flex-col print:overflow-visible">
         {/* Mobile top bar with hamburger */}
         <div
           className="relative flex items-center justify-between px-4 py-3 border-b border-brand-border/60 lg:hidden print:hidden sticky top-0 z-30"

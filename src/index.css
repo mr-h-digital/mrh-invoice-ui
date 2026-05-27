@@ -120,20 +120,25 @@
   /* ── 1. Page setup ── */
   @page {
     size: A4 portrait;
-    margin: 10mm 8mm;           /* breathing room without wasting space */
+    margin: 6mm 5mm;
   }
 
-  /* ── 2. Collapse all height constraints so there's no blank page ──
-     min-h-screen on AppShell forces the container to be 100vh tall which
-     pushes content past the first A4 page, causing an empty second page. */
+  /* ── 2. Collapse ALL height and overflow constraints ──
+     overflow-y:auto on <main> clips the scroll container to viewport height
+     when printing — the browser only prints what's in the visible scroll area.
+     min-h-screen forces containers taller than A4, causing blank page 2.    */
   html, body, #root,
   body > div, body > div > div,
-  main, .flex-1 {
+  main, .flex-1,
+  [class*="overflow-y"],
+  [class*="overflow-x"] {
     min-height: 0 !important;
     height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
-  /* ── 3. Strip body/page chrome ── */
+  /* ── 3. Strip body chrome ── */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -176,6 +181,9 @@
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    /* Scale down so payment section fits on the same page as line items.
+       0.82 ≈ A4 printable width / typical screen render width.           */
+    zoom: 0.82;
   }
 
   /* ── 7. Invoice card — flat document, no shadow, full width ── */
