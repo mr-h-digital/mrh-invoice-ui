@@ -112,39 +112,65 @@
 
 /* ═══════════════════════════════════════════════════════════════════════
    PRINT STYLES
-   Default = dark branded output (.dark-print class on .invoice-preview).
-   Moon/Sun toggle in the UI switches to clean white by removing .dark-print.
+   Dark print = .dark-print class on .invoice-preview (default toggle state).
+   Light print = no .dark-print class (Moon/Sun toggle switched to white).
    ═══════════════════════════════════════════════════════════════════════ */
 @media print {
 
-  /* ── 1. Hide ALL UI chrome including toasts ── */
+  /* ── 1. Page setup ── */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 8mm;           /* breathing room without wasting space */
+  }
+
+  /* ── 2. Collapse all height constraints so there's no blank page ──
+     min-h-screen on AppShell forces the container to be 100vh tall which
+     pushes content past the first A4 page, causing an empty second page. */
+  html, body, #root,
+  body > div, body > div > div,
+  main, .flex-1 {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  /* ── 3. Strip body/page chrome ── */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+
+  /* ── 4. Hide ALL UI chrome including toasts, sidebar, nav ── */
   .print\:hidden,
   nav,
   aside,
   header,
   .inv-watermark,
-  /* Sonner toast portal */
   [data-sonner-toaster],
   [data-sonner-toast],
-  /* Any fixed/absolute overlays that aren't the invoice */
+  /* Mobile hamburger bar */
+  .lg\:hidden.print\:hidden,
+  /* PageBackground overlay and bg image divs */
+  .animate-bg-fade,
+  /* Any fixed/absolute UI that isn't the invoice itself */
   body > div:not(#root) {
     display: none !important;
   }
 
-  /* ── 2. Page setup — full bleed, no margins wasted ── */
-  @page {
-    size: A4 portrait;
-    margin: 0;
+  /* ── 5. PageBackground — remove decorative backgrounds on print ── */
+  .flex-1.relative.flex.flex-col.bg-brand-dark {
+    background: transparent !important;
   }
 
-  /* ── 3. Root and body take full page ── */
-  html, body {
-    margin: 0 !important;
+  /* ── 6. Page wrapper — full width, no gutters ── */
+  .invoice-detail-page-wrapper {
     padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
     width: 100% !important;
   }
 
-  /* ── 4. Print area fills the full page width ── */
   #invoice-print-area {
     width: 100% !important;
     max-width: 100% !important;
@@ -152,62 +178,44 @@
     margin: 0 !important;
   }
 
-  /* The page wrapper that centres content on screen — remove on print */
-  .invoice-detail-page-wrapper {
-    padding: 0 !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-  }
-
-  /* ── 5. Invoice card fills the page — no floating card look ── */
+  /* ── 7. Invoice card — flat document, no shadow, full width ── */
   .invoice-preview {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     width: 100% !important;
+    page-break-inside: auto;
   }
 
-  /* Tighter horizontal padding on A4 so content doesn't feel cramped */
-  .invoice-preview > div[style*="padding"],
-  .invoice-preview div[style*="padding: "] {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-  }
-
-  /* Payment details and notes margin flush to edges */
-  .invoice-preview div[style*="margin: 0 "] {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  /* Keep line items from breaking across pages */
-  .invoice-preview tr,
+  /* Avoid breaking individual line item rows across pages */
   .invoice-preview > div > div {
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
-  /* ── 6. DARK PRINT — branded dark theme (default, .dark-print class) ── */
-  body:has(.invoice-preview.dark-print) {
-    background: #0F1013 !important;
-  }
-
+  /* ── 8. DARK PRINT — branded theme preserved ── */
+  .invoice-preview.dark-print,
   .invoice-preview.dark-print * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* ── 7. LIGHT PRINT — clean white output (no .dark-print class) ── */
-  body:has(.invoice-preview:not(.dark-print)) {
-    background: #ffffff !important;
+  body:has(.invoice-preview.dark-print) {
+    background: #0F1013 !important;
   }
 
+  /* ── 9. LIGHT PRINT — clean white with brand accents ── */
   .invoice-preview:not(.dark-print) {
     background: #ffffff !important;
     color: #111827 !important;
   }
 
-  /* Strip dark section backgrounds */
+  body:has(.invoice-preview:not(.dark-print)) {
+    background: #ffffff !important;
+  }
+
+  /* Strip all dark section backgrounds */
   .invoice-preview:not(.dark-print) div,
   .invoice-preview:not(.dark-print) table,
   .invoice-preview:not(.dark-print) td,
@@ -215,7 +223,7 @@
     background-color: transparent !important;
   }
 
-  /* Near-black text everywhere */
+  /* Near-black text */
   .invoice-preview:not(.dark-print) p,
   .invoice-preview:not(.dark-print) span,
   .invoice-preview:not(.dark-print) div {
@@ -230,7 +238,7 @@
     color: #4a6e00 !important;
   }
 
-  /* Solid lime total block stays lime — forced to print */
+  /* Solid lime total block — force background to print */
   .invoice-preview:not(.dark-print) div[style*="background: rgb(170, 219, 30)"],
   .invoice-preview:not(.dark-print) div[style*="background-color: rgb(170, 219, 30)"] {
     -webkit-print-color-adjust: exact !important;
@@ -238,7 +246,7 @@
     background: #AADB1E !important;
   }
 
-  /* Borders subtle on white */
+  /* Subtle borders on white */
   .invoice-preview:not(.dark-print) [style*="border"] {
     border-color: #d1d5db !important;
   }
