@@ -7,7 +7,6 @@ interface SplashScreenProps {
   onComplete: () => void;
 }
 
-// ── Animated code line ────────────────────────────────────────────────────
 function CodeLine({ text, delay, color = '#5A6478' }: { text: string; delay: number; color?: string }) {
   return (
     <motion.div
@@ -21,10 +20,8 @@ function CodeLine({ text, delay, color = '#5A6478' }: { text: string; delay: num
   );
 }
 
-// Durations are fixed constants — avoids Math.random() firing on each render
 const DOT_DURATIONS = [3.8, 4.2, 3.4, 4.8, 3.2, 4.5, 3.9, 4.1, 3.6, 4.7, 3.3, 4.4, 3.7, 4.9];
 
-// ── Floating grid dot ─────────────────────────────────────────────────────
 function GridDot({ x, y, delay, duration }: { x: number; y: number; delay: number; duration: number }) {
   return (
     <motion.div
@@ -35,7 +32,6 @@ function GridDot({ x, y, delay, duration }: { x: number; y: number; delay: numbe
   );
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────
 function ProgressBar({ progress }: { progress: number }) {
   return (
     <div style={{ width: '100%', height: 2, background: 'rgba(170,219,30,0.15)', borderRadius: 2, overflow: 'hidden' }}>
@@ -48,7 +44,6 @@ function ProgressBar({ progress }: { progress: number }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('Initialising…');
@@ -68,9 +63,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     steps.forEach(({ at, pct, text }) => {
       timers.push(setTimeout(() => { setProgress(pct); setStatusText(text); }, at));
     });
-    // start exit
     timers.push(setTimeout(() => setVisible(false), 2700));
-    // fire onComplete after exit animation
     timers.push(setTimeout(onComplete, 3300));
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -96,6 +89,28 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     { text: '✓ dashboard ready',                      delay: 2.3,  color: '#AADB1E' },
   ];
 
+  // Corner bracket helper — inset shrinks on mobile
+  const corner = (pos: React.CSSProperties, isHoriz: boolean, delay: number) => (
+    <motion.div
+      initial={{ opacity: 0, [isHoriz ? 'scaleX' : 'scaleY']: 0 }}
+      animate={{ opacity: 1, [isHoriz ? 'scaleX' : 'scaleY']: 1 }}
+      transition={{ delay, duration: 0.5, ease: 'easeOut' }}
+      style={{
+        position: 'absolute',
+        ...pos,
+        width: isHoriz ? 40 : 2,
+        height: isHoriz ? 2 : 40,
+        background: '#AADB1E',
+        borderRadius: 2,
+        transformOrigin: pos.left !== undefined
+          ? (isHoriz ? 'left' : (pos.top !== undefined ? 'top' : 'bottom'))
+          : (isHoriz ? 'right' : (pos.top !== undefined ? 'top' : 'bottom')),
+      }}
+    />
+  );
+
+  const inset = 20; // px — safe on any phone
+
   return (
     <AnimatePresence>
       {visible && (
@@ -112,17 +127,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             overflow: 'hidden',
           }}
         >
-          {/* ── Background photo at ~70% opacity ── */}
+          {/* ── Background photo ── */}
           <div style={{
             position: 'absolute', inset: 0,
             backgroundImage: `url(${splashBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 40%',
-            opacity: 0.70,
-            mixBlendMode: 'luminosity',
-            pointerEvents: 'none',
+            backgroundSize: 'cover', backgroundPosition: 'center 40%',
+            opacity: 0.70, mixBlendMode: 'luminosity', pointerEvents: 'none',
           }} />
-          {/* ── Dark overlay to keep foreground legible ── */}
+          {/* ── Dark overlay ── */}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'linear-gradient(135deg, rgba(15,16,19,0.72) 0%, rgba(15,16,19,0.55) 50%, rgba(15,16,19,0.80) 100%)',
@@ -132,40 +144,36 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           {/* ── Grid dots ── */}
           {dots.map((d, i) => <GridDot key={i} {...d} duration={DOT_DURATIONS[i]} />)}
 
-          {/* ── Radial lime glow behind logo ── */}
+          {/* ── Radial lime glow ── */}
           <div style={{
-            position: 'absolute', width: 480, height: 480,
-            borderRadius: '50%',
+            position: 'absolute', width: 480, height: 480, borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(170,219,30,0.07) 0%, transparent 70%)',
             pointerEvents: 'none',
           }} />
 
-          {/* ── Corner accent lines ── */}
-          {/* top-left */}
-          <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', top: 32, left: 32, width: 48, height: 2, background: '#AADB1E', transformOrigin: 'left', borderRadius: 2 }} />
-          <motion.div initial={{ opacity: 0, scaleY: 0 }} animate={{ opacity: 1, scaleY: 1 }} transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', top: 32, left: 32, width: 2, height: 48, background: '#AADB1E', transformOrigin: 'top', borderRadius: 2 }} />
-          {/* top-right */}
-          <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', top: 32, right: 32, width: 48, height: 2, background: '#AADB1E', transformOrigin: 'right', borderRadius: 2 }} />
-          <motion.div initial={{ opacity: 0, scaleY: 0 }} animate={{ opacity: 1, scaleY: 1 }} transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', top: 32, right: 32, width: 2, height: 48, background: '#AADB1E', transformOrigin: 'top', borderRadius: 2 }} />
-          {/* bottom-left */}
-          <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', bottom: 32, left: 32, width: 48, height: 2, background: '#AADB1E', transformOrigin: 'left', borderRadius: 2 }} />
-          <motion.div initial={{ opacity: 0, scaleY: 0 }} animate={{ opacity: 1, scaleY: 1 }} transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', bottom: 32, left: 32, width: 2, height: 48, background: '#AADB1E', transformOrigin: 'bottom', borderRadius: 2 }} />
-          {/* bottom-right */}
-          <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ delay: 0.25, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', bottom: 32, right: 32, width: 48, height: 2, background: '#AADB1E', transformOrigin: 'right', borderRadius: 2 }} />
-          <motion.div initial={{ opacity: 0, scaleY: 0 }} animate={{ opacity: 1, scaleY: 1 }} transition={{ delay: 0.25, duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', bottom: 32, right: 32, width: 2, height: 48, background: '#AADB1E', transformOrigin: 'bottom', borderRadius: 2 }} />
+          {/* ── Corner accents — tighter inset so they don't eat content on phones ── */}
+          {corner({ top: inset, left: inset }, true,  0.10)}
+          {corner({ top: inset, left: inset }, false, 0.10)}
+          {corner({ top: inset, right: inset }, true,  0.15)}
+          {corner({ top: inset, right: inset }, false, 0.15)}
+          {corner({ bottom: inset, left: inset }, true,  0.20)}
+          {corner({ bottom: inset, left: inset }, false, 0.20)}
+          {corner({ bottom: inset, right: inset }, true,  0.25)}
+          {corner({ bottom: inset, right: inset }, false, 0.25)}
 
-          {/* ── Code terminal (bottom-left) ── */}
+          {/* ── Terminal card — hidden on small screens to avoid overlap ── */}
           <motion.div
+            className="hidden sm:block"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
             style={{
-              position: 'absolute', bottom: 90, left: 52,
+              position: 'absolute', bottom: 80, left: 48,
               background: 'rgba(30,33,40,0.7)',
               border: '1px solid #2E333D',
               borderRadius: 8, padding: '14px 20px',
               backdropFilter: 'blur(8px)',
-              minWidth: 300,
+              minWidth: 280, maxWidth: 'calc(50vw - 60px)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
@@ -178,7 +186,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           </motion.div>
 
           {/* ── Central content ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            position: 'relative', zIndex: 1,
+            padding: '0 24px', width: '100%', maxWidth: 480,
+            /* Push up slightly on desktop so the terminal card below doesn't overlap */
+          }}>
 
             {/* Logo */}
             <motion.img
@@ -187,7 +200,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               initial={{ opacity: 0, scale: 0.8, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.05, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-              style={{ width: 88, height: 88, objectFit: 'contain', marginBottom: 24 }}
+              style={{ width: 'clamp(64px, 18vw, 88px)', height: 'clamp(64px, 18vw, 88px)', objectFit: 'contain', marginBottom: 20 }}
             />
 
             {/* Business name */}
@@ -197,8 +210,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ delay: 0.25, duration: 0.5, ease: 'easeOut' }}
               style={{
                 fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                fontSize: 'clamp(28px, 5vw, 44px)',
-                color: '#E8EDF5', margin: 0, letterSpacing: -1,
+                fontSize: 'clamp(26px, 6vw, 44px)',
+                color: '#E8EDF5', margin: 0, letterSpacing: -1, textAlign: 'center',
               }}
             >
               Mr. H Digital
@@ -211,14 +224,15 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ delay: 0.4, duration: 0.4, ease: 'easeOut' }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}
             >
-              <div style={{ height: 1, width: 32, background: '#2E333D' }} />
+              <div style={{ height: 1, width: 24, background: '#2E333D' }} />
               <span style={{
-                fontFamily: "'Space Mono', monospace", fontSize: 11,
+                fontFamily: "'Space Mono', monospace",
+                fontSize: 'clamp(9px, 2.5vw, 11px)',
                 letterSpacing: 3, textTransform: 'uppercase', color: '#5A6478',
               }}>
                 Invoice Generator
               </span>
-              <div style={{ height: 1, width: 32, background: '#2E333D' }} />
+              <div style={{ height: 1, width: 24, background: '#2E333D' }} />
             </motion.div>
 
             {/* Tagline */}
@@ -228,8 +242,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ delay: 0.6, duration: 0.5 }}
               style={{
                 fontFamily: "'DM Sans', sans-serif", fontWeight: 300,
-                fontSize: 14, color: '#5A6478',
-                marginTop: 8, letterSpacing: 0.3,
+                fontSize: 'clamp(12px, 3vw, 14px)', color: '#5A6478',
+                marginTop: 8, letterSpacing: 0.3, textAlign: 'center',
               }}
             >
               Custom websites &amp; digital products for local businesses
@@ -240,7 +254,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              style={{ width: 260, marginTop: 48 }}
+              style={{ width: '100%', maxWidth: 260, marginTop: 40 }}
             >
               <ProgressBar progress={progress} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
@@ -254,13 +268,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             </motion.div>
           </div>
 
-          {/* ── Version tag ── */}
+          {/* ── Version tag — desktop only ── */}
           <motion.div
+            className="hidden sm:block"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.4 }}
             style={{
-              position: 'absolute', bottom: 28, right: 52,
+              position: 'absolute', bottom: 24, right: 48,
               fontFamily: "'Space Mono', monospace", fontSize: 10,
               color: '#2E333D', letterSpacing: 1,
             }}
