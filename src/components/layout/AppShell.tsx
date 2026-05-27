@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sidebar } from './Sidebar';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import navBg from '../../assets/nav-bg.jpg';
 
@@ -8,8 +8,55 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+// Shown only on mobile — fades out once user scrolls down
+function ScrollHint({ container }: { container: React.RefObject<HTMLElement | null> }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = container.current;
+    if (!el) return;
+
+    // Only show if content actually overflows
+    const check = () => {
+      const overflows = el.scrollHeight > el.clientHeight + 8;
+      const atTop = el.scrollTop < 10;
+      setVisible(overflows && atTop);
+    };
+
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => {
+      el.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+    };
+  }, [container]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-20 lg:hidden print:hidden">
+      {/* Gradient fade */}
+      <div className="h-20 bg-gradient-to-t from-brand-dark/90 to-transparent" />
+      {/* Bounce arrow */}
+      <div className="flex justify-center pb-3 -mt-6">
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-0.5"
+        >
+          <div className="w-5 h-0.5 bg-lime rounded-full opacity-80" />
+          <div className="w-3.5 h-0.5 bg-lime rounded-full opacity-50 mt-0.5" />
+          <div className="w-2 h-0.5 bg-lime rounded-full opacity-30 mt-0.5" />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
 
   return (
     <div className="flex min-h-screen print:min-h-0 bg-brand-dark print:bg-transparent">
@@ -45,10 +92,10 @@ export function AppShell({ children }: AppShellProps) {
         )}
       </AnimatePresence>
 
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main ref={mainRef} className="flex-1 min-w-0 flex flex-col overflow-y-auto lg:overflow-visible">
         {/* Mobile top bar with hamburger */}
         <div
-          className="flex items-center justify-between px-4 py-3 border-b border-brand-border/60 lg:hidden print:hidden"
+          className="relative flex items-center justify-between px-4 py-3 border-b border-brand-border/60 lg:hidden print:hidden sticky top-0 z-30"
           style={{ backgroundImage: `url(${navBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
           <div className="absolute inset-0 bg-brand-charcoal/85 pointer-events-none" />
@@ -66,6 +113,9 @@ export function AppShell({ children }: AppShellProps) {
 
         {children}
       </main>
+
+      {/* Scroll hint — mobile only, disappears once user scrolls */}
+      <ScrollHint container={mainRef} />
     </div>
   );
 }
