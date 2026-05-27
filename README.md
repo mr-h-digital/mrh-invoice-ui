@@ -2,7 +2,7 @@
 	<img src="assets/mrhdigital-logo.png" alt="Mr. H Digital Logo" width="120" />
 </p>
 
-<h1 align="center">Mr. H Digital — Invoice Generator</h1>
+<h1 align="center">Mr. H Digital — Invoice Generator UI</h1>
 
 <p align="center">
 	<strong>Production-ready React SPA for managing clients, creating branded invoices, and tracking payments.</strong>
@@ -12,6 +12,8 @@
 	<a href="https://mr-h-digital.github.io/mrh-invoice-ui/">Live App</a>
 	·
 	<a href="https://github.com/mr-h-digital/mrh-invoice-ui/actions">Deployment Workflow</a>
+	·
+	<a href="https://github.com/mr-h-digital/mrh-invoice-ui">Repository</a>
 </p>
 
 <p align="center">
@@ -20,6 +22,9 @@
 	</a>
 	<a href="https://github.com/mr-h-digital/mrh-invoice-ui/commits/main">
 		<img src="https://img.shields.io/github/last-commit/mr-h-digital/mrh-invoice-ui?label=last%20commit" alt="Last Commit" />
+	</a>
+	<a href="https://github.com/mr-h-digital/mrh-invoice-ui">
+		<img src="https://img.shields.io/github/repo-size/mr-h-digital/mrh-invoice-ui?label=repo%20size" alt="Repo Size" />
 	</a>
 	<img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19" />
 	<img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" alt="TypeScript 6" />
@@ -32,37 +37,38 @@
 
 ## Overview
 
-This is the frontend SPA for the Mr. H Digital Invoice Generator. It handles the complete invoicing lifecycle — splash screen, login, client address book, invoice creation with live preview, status management, and branded PDF export.
+This is the frontend SPA for the Mr. H Digital Invoice Generator. It handles the complete invoicing lifecycle — branded splash screen, admin login, client address book, invoice creation with live preview, status management, and branded PDF export.
 
-Data is persisted to `localStorage` in the current phase. The service layer is built for a zero-friction swap to the Spring Boot BFF API — set `VITE_USE_API=true` in `.env.local` and all service calls route to the backend automatically.
+Data is persisted to `localStorage` in the current phase. The service layer is built for a zero-friction swap to the Spring Boot BFF — set `VITE_USE_API=true` in `.env.local` and all service calls route to the backend automatically without touching any UI code.
 
 ## Highlights
 
-- Branded splash screen with progress bar, terminal animation, and developer photo background
-- JWT-free admin login with session persistence across page refreshes
-- Dashboard with pre-aggregated stats from the backend (`/api/dashboard/stats`) with animated stat cards
-- Invoice list with status filter tabs, full-text search, and animated card grid
-- Two-panel invoice editor — form on the left, live branded preview on the right
-- Drag-to-reorder line items with `dnd-kit` and `sortOrder` synced to the backend
-- Real-time totals: subtotal → discount (flat or %) → 15% VAT → total due
-- Client address book with invoice count and total per client
-- Print / PDF export with togglable dark and light print modes
-- Mobile-first responsive layout with slide-over sidebar drawer on small screens
+- Branded splash screen with animated progress bar, terminal boot sequence, and developer photo background
+- Admin login with session persistence across page refreshes (no JWT required in localStorage phase)
+- Dashboard with pre-aggregated stats (`/api/dashboard/stats`) and animated count-up stat cards
+- Invoice list with status filter tabs, full-text search, and staggered card animations
+- Two-panel invoice editor — form left, real-time branded invoice preview right
+- Drag-to-reorder line items with `dnd-kit`; `sortOrder` synced to the backend on every save
+- Real-time totals: subtotal → discount (flat R or %) → 15% SA VAT → total due
+- Client address book with invoice count and lifetime total per client
+- Print / PDF export with togglable dark-branded and clean-white print modes
+- Mobile-first responsive layout with spring-animated slide-over sidebar drawer
 - Skeleton loaders, empty states, confirm dialogs, and toast notifications throughout
-- Background images compressed 82% — total asset payload under 1.5 MB
+- Background images compressed 82% via `sharp` — total asset payload under 1.5 MB
 - Auto-deploys to GitHub Pages via GitHub Actions on every push to `main`
 
 ## Technology
 
-| Category | Library |
-|----------|---------|
-| Framework | React 19 + TypeScript 6 (strict) |
+| Category | Choice |
+|----------|--------|
+| Language | TypeScript 6 (strict mode) |
+| Framework | React 19 |
 | Build | Vite 8 + `@tailwindcss/vite` |
 | Styling | Tailwind CSS v4 |
 | Routing | React Router v7 (HashRouter for GitHub Pages) |
 | State | Zustand |
 | Forms | React Hook Form + Zod |
-| HTTP | Axios (with `ApiResponse<T>` interceptor) |
+| HTTP | Axios (with `ApiResponse<T>` unwrap interceptor) |
 | Animation | Framer Motion v12 |
 | Drag & Drop | dnd-kit |
 | Toasts | Sonner |
@@ -74,40 +80,40 @@ Data is persisted to `localStorage` in the current phase. The service layer is b
 
 ```text
 mrh-web-ui-frontend/
-|- src/
-|  |- components/
-|  |  |- layout/         # AppShell (mobile drawer), Sidebar, TopBar, PageBackground
-|  |  |- invoice/        # InvoiceForm, InvoicePreview, LineItemsTable, InvoiceCard
-|  |  |- clients/        # ClientForm, ClientCard, ClientSelector
-|  |  |- shared/         # Modal, Badge, EmptyState, ConfirmDialog
-|  |  |- SplashScreen.tsx
-|  |- pages/
-|  |  |- LoginPage.tsx
-|  |  |- DashboardPage.tsx
-|  |  |- InvoicesPage.tsx
-|  |  |- NewInvoicePage.tsx
-|  |  |- EditInvoicePage.tsx
-|  |  |- InvoiceDetailPage.tsx
-|  |  |- ClientsPage.tsx
-|  |  |- NotFoundPage.tsx
-|  |- hooks/             # useInvoices, useClients, useLocalStorage, usePrint
-|  |- services/
-|  |  |- api.ts          # Axios instance — unwraps ApiResponse<T> envelope
-|  |  |- invoiceService.ts   # localStorage ↔ API toggle via VITE_USE_API
-|  |  |- clientService.ts    # localStorage ↔ API toggle via VITE_USE_API
-|  |- store/             # invoiceStore, clientStore, authStore, uiStore (Zustand)
-|  |- schemas/           # invoiceSchema, clientSchema (Zod — mirrors backend enums)
-|  |- types/             # invoice.ts, client.ts, api.ts
-|  |- utils/             # formatCurrency, formatDate, invoiceTotals
-|  |- assets/            # Compressed background images, logos
-|- .github/
-|  |- workflows/
-|     |- deploy-pages.yml
-|- assets/
-|  |- mrhdigital-logo.png
-|- .env.example
-|- index.html
-|- package.json
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml          # Auto-deploy to GitHub Pages
+├── assets/
+│   └── mrhdigital-logo.png
+├── src/
+│   ├── components/
+│   │   ├── layout/                   # AppShell, Sidebar, TopBar, PageBackground
+│   │   ├── invoice/                  # InvoiceForm, InvoicePreview, LineItemsTable, InvoiceCard
+│   │   ├── clients/                  # ClientForm, ClientCard, ClientSelector
+│   │   ├── shared/                   # Modal, Badge, EmptyState, ConfirmDialog
+│   │   └── SplashScreen.tsx
+│   ├── pages/
+│   │   ├── LoginPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── InvoicesPage.tsx
+│   │   ├── NewInvoicePage.tsx
+│   │   ├── EditInvoicePage.tsx
+│   │   ├── InvoiceDetailPage.tsx
+│   │   ├── ClientsPage.tsx
+│   │   └── NotFoundPage.tsx
+│   ├── hooks/                        # useInvoices, useClients, useLocalStorage, usePrint
+│   ├── services/
+│   │   ├── api.ts                    # Axios instance — unwraps ApiResponse<T> envelope
+│   │   ├── invoiceService.ts         # localStorage ↔ API toggle via VITE_USE_API
+│   │   └── clientService.ts          # localStorage ↔ API toggle via VITE_USE_API
+│   ├── store/                        # invoiceStore, clientStore, authStore, uiStore
+│   ├── schemas/                      # invoiceSchema, clientSchema (Zod — mirrors backend enums)
+│   ├── types/                        # invoice.ts, client.ts, api.ts
+│   ├── utils/                        # formatCurrency, formatDate, invoiceTotals
+│   └── assets/                       # Compressed background images, brand logos
+├── .env.example
+├── index.html
+└── package.json
 ```
 
 ## Prerequisites
@@ -117,28 +123,32 @@ mrh-web-ui-frontend/
 
 ## Quick Start
 
-Install dependencies:
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-Start the dev server:
+### 2. Start the dev server
 
 ```bash
 npm run dev
 ```
 
-App runs at `http://localhost:5173`.
+### 3. Open the app
 
-**Login credentials:**
+```
+http://localhost:5173
+```
+
+### 4. Login credentials
 
 ```
 Email:    admin@mrhdigital.co.za
 Password: password
 ```
 
-## Build & Preview
+## Building
 
 Build for production:
 
@@ -152,20 +162,6 @@ Preview the production build locally:
 npm run preview
 ```
 
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:8080/api` | Spring Boot BFF base URL |
-| `VITE_USE_API` | _(unset)_ | Set to `true` to route all service calls to the BFF instead of localStorage |
-| `VITE_APP_NAME` | `Mr. H Digital Invoice Generator` | App display name |
-
-Copy `.env.example` to `.env.local` to configure:
-
-```bash
-cp .env.example .env.local
-```
-
 ## Connecting to the Backend
 
 Set both variables in `.env.local`:
@@ -175,9 +171,39 @@ VITE_API_URL=http://localhost:8080/api
 VITE_USE_API=true
 ```
 
-Start the Spring Boot BFF (`mrh-invoice-bff`) with Docker Compose, then run `npm run dev`. No other changes are needed — the service layer handles the switch transparently.
+Start the Spring Boot BFF (`mrh-invoice-bff`) with Docker Compose, then run `npm run dev`. No other files need changing — the service layer handles the switch transparently.
 
-### API alignment
+## API Endpoints Used
+
+### Dashboard — `/api/dashboard`
+
+| Method | Path | Used by |
+|--------|------|---------|
+| `GET` | `/api/dashboard/stats` | Dashboard page — totals, counts, 5 recent invoices |
+
+### Invoices — `/api/invoices`
+
+| Method | Path | Used by |
+|--------|------|---------|
+| `GET` | `/api/invoices` | Invoice list (paginated, filterable, searchable) |
+| `POST` | `/api/invoices` | Create invoice |
+| `GET` | `/api/invoices/{id}` | Invoice detail + edit page |
+| `PUT` | `/api/invoices/{id}` | Save edited invoice (recalculates totals server-side) |
+| `PATCH` | `/api/invoices/{id}/status` | Status-only update (Mark Paid, status dropdown) |
+| `POST` | `/api/invoices/{id}/duplicate` | Duplicate as new DRAFT with today's date |
+| `DELETE` | `/api/invoices/{id}` | Delete invoice |
+| `GET` | `/api/invoices/next-number` | New Invoice page — auto-incremented number from DB |
+
+### Clients — `/api/clients`
+
+| Method | Path | Used by |
+|--------|------|---------|
+| `GET` | `/api/clients` | Client selector + clients page |
+| `POST` | `/api/clients` | Add client |
+| `PUT` | `/api/clients/{id}` | Edit client |
+| `DELETE` | `/api/clients/{id}` | Delete client (409 Conflict surfaced as toast) |
+
+## API Alignment
 
 All enum values match the Java backend exactly:
 
@@ -188,39 +214,25 @@ All enum values match the Java backend exactly:
 
 The Axios interceptor in `src/services/api.ts` automatically unwraps the backend's `ApiResponse<T>` envelope so all service callers receive `T` directly.
 
-## API Endpoints Used
+## Environment Variables
 
-| Endpoint | Used by |
-|----------|---------|
-| `GET /api/dashboard/stats` | Dashboard page — totals and recent invoices |
-| `GET /api/invoices` | Invoices list (paginated, filtered) |
-| `GET /api/invoices/next-number` | New Invoice page — auto-incremented number |
-| `POST /api/invoices` | Create invoice |
-| `GET /api/invoices/{id}` | Invoice detail / edit |
-| `PUT /api/invoices/{id}` | Save edited invoice |
-| `PATCH /api/invoices/{id}/status` | Mark paid / status change |
-| `POST /api/invoices/{id}/duplicate` | Duplicate invoice |
-| `DELETE /api/invoices/{id}` | Delete invoice |
-| `GET /api/clients` | Client selector + clients page |
-| `POST /api/clients` | Add client |
-| `PUT /api/clients/{id}` | Edit client |
-| `DELETE /api/clients/{id}` | Delete client (409 surfaced as toast) |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_API_URL` | `http://localhost:8080/api` | Spring Boot BFF base URL |
+| `VITE_USE_API` | _(unset)_ | Set to `true` to route all calls to the BFF |
+| `VITE_APP_NAME` | `Mr. H Digital Invoice Generator` | App display name |
 
-## Pre-seeded Data
+## Seed Data
 
 On first load (localStorage mode) the app seeds with:
 
-**Clients**
-
-| Company | Contact | Email |
-|---------|---------|-------|
+| Client | Contact | Email |
+|--------|---------|-------|
 | Timeline Vehicle Export Company (Pty) Ltd | Thabo Seabi | thabo@tveco.co.za |
 | R.O.C.K. Mission Ministries | Pastor Chernay Hildebrandt | info@rockmission.co.za |
 | K&T Transport | Contact | info@ktransport.co.za |
 
-**Invoices**
-
-`INV-2026-001` — TVECO, status: `SENT`, 5 line items, R 1,200 negotiated discount, total **R 6,200.00**, due 1 June 2026.
+Plus invoice `INV-2026-001` for TVECO — status `SENT`, 5 line items, R 1,200 negotiated discount, total **R 6,200.00**, due 1 June 2026.
 
 ## Brand Tokens
 
@@ -240,9 +252,9 @@ On first load (localStorage mode) the app seeds with:
 
 ## Deployment
 
-The GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) builds and deploys to GitHub Pages on every push to `main`.
+The GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) builds and deploys to GitHub Pages automatically on every push to `main`.
 
-Manual deploy trigger:
+Manual trigger:
 
 ```
 Actions → Deploy to GitHub Pages → Run workflow
@@ -255,7 +267,7 @@ To deploy to other platforms:
 - **Vercel** — connect repo, framework preset: Vite
 - **Netlify** — connect repo, publish directory: `dist`, build command: `npm run build`
 
-> **Note:** When deploying to Vercel or Netlify, switch `HashRouter` back to `BrowserRouter` in `src/App.tsx` and remove `base: '/mrh-invoice-ui/'` from `vite.config.ts` — those settings exist only for the GitHub Pages subdirectory path.
+> **Note:** When moving to Vercel or Netlify, switch `HashRouter` back to `BrowserRouter` in `src/App.tsx` and remove `base: '/mrh-invoice-ui/'` from `vite.config.ts`. Those two settings exist only for the GitHub Pages subdirectory path.
 
 ---
 
@@ -264,7 +276,7 @@ To deploy to other platforms:
 </p>
 
 <p align="center">
-	<img src="assets/mrhdigital-logo.png" alt="Mr. H Digital" width="100" />
+	<img src="assets/mrhdigital-logo.png" alt="Mr. H Digital Logo" width="120" />
 </p>
 
 <p align="center">
