@@ -75,13 +75,13 @@ function toRequest(data: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) {
       unitPrice: li.unitPrice,
       sortOrder: li.sortOrder ?? i,
     })),
-    discountType: data.discountType ?? undefined,
+    clientSnapshot: data.clientSnapshot,
+    discountType: data.discountType || undefined,
     discountValue: data.discountValue,
     vatEnabled: data.vatEnabled,
     vatRate: data.vatRate,
     notes: data.notes,
     paymentDetails: data.paymentDetails,
-    clientSnapshot: data.clientSnapshot,
   };
 }
 
