@@ -60,7 +60,7 @@ function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder"
-          className="mt-2 p-1 text-brand-muted hover:text-brand-text cursor-grab active:cursor-grabbing"
+          className="mt-2 p-1 text-brand-muted hover:text-brand-text cursor-grab active:cursor-grabbing touch-none"
         >
           <GripVertical size={16} />
         </button>

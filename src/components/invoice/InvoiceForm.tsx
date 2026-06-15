@@ -142,9 +142,11 @@ export function InvoiceForm() {
       </section>
 
       {/* Line items */}
-      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5 overflow-x-auto">
+      <section className="bg-brand-card border border-brand-border rounded-xl p-4 sm:p-5">
         <h3 className="font-display font-bold text-brand-white text-sm mb-4">Line Items</h3>
-        <LineItemsTable />
+        <div className="overflow-x-auto">
+          <LineItemsTable />
+        </div>
         {errors.lineItems && typeof errors.lineItems === 'object' && 'message' in errors.lineItems && (
           <p className="field-error mt-2">{String(errors.lineItems.message)}</p>
         )}
