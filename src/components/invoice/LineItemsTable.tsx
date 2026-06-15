@@ -1,5 +1,5 @@
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useCallback, memo } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 import type { InvoiceFormValues } from '../../schemas/invoiceSchema';
@@ -26,19 +26,18 @@ interface RowProps {
   isLast: boolean;
 }
 
-function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast }: RowProps) {
+const Row = memo(function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast }: RowProps) {
   const { register, setValue, getValues } = useFormContext<InvoiceFormValues>();
 
   useEffect(() => {
     setValue(`lineItems.${index}.sortOrder`, index, { shouldDirty: true });
   }, [index, setValue]);
 
-  // Called on every qty/unitPrice change — updates amount without causing a Row re-render
-  const updateAmount = () => {
+  const updateAmount = useCallback(() => {
     const qty   = Number(getValues(`lineItems.${index}.quantity`))  || 0;
     const price = Number(getValues(`lineItems.${index}.unitPrice`)) || 0;
     setValue(`lineItems.${index}.amount`, qty * price, { shouldDirty: true });
-  };
+  }, [index, getValues, setValue]);
 
   return (
     <div className="py-3 border-b border-brand-border last:border-0">
@@ -112,11 +111,15 @@ function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast
       </div>
     </div>
   );
-}
+});
 
 export function LineItemsTable() {
   const { control } = useFormContext<InvoiceFormValues>();
   const { fields, append, remove, move } = useFieldArray({ control, name: 'lineItems' });
+
+  const handleRemove   = useCallback((i: number) => remove(i), [remove]);
+  const handleMoveUp   = useCallback((i: number) => move(i, i - 1), [move]);
+  const handleMoveDown = useCallback((i: number) => move(i, i + 1), [move]);
 
   return (
     <div>
@@ -132,9 +135,9 @@ export function LineItemsTable() {
         <Row
           key={field.id}
           index={index}
-          onRemove={remove}
-          onMoveUp={(i) => move(i, i - 1)}
-          onMoveDown={(i) => move(i, i + 1)}
+          onRemove={handleRemove}
+          onMoveUp={handleMoveUp}
+          onMoveDown={handleMoveDown}
           canRemove={fields.length > 1}
           isFirst={index === 0}
           isLast={index === fields.length - 1}
