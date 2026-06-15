@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useForm, FormProvider, type SubmitHandler, type Resolver } from 'react-hook-form';
+import { useForm, useWatch, FormProvider, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Save, X } from 'lucide-react';
@@ -60,15 +60,20 @@ export function NewInvoicePage() {
     });
   }, [methods]);
 
-  // Subscribe only to fields needed for the live preview
-  const formValues = methods.watch();
-  const totals = calculateTotals({
-    lineItems: formValues.lineItems ?? [],
-    discountType: formValues.discountType,
-    discountValue: formValues.discountValue ?? 0,
-    vatEnabled: formValues.vatEnabled,
-    vatRate: formValues.vatRate ?? 0.15,
+  // Subscribe only to fields needed for the live preview — avoids full-page
+  // re-renders on every keystroke which were stealing focus from inputs
+  const [invoiceNumber, lineItems, discountType, discountValue, vatEnabled, vatRate, clientId, clientSnapshot, issueDate, dueDate, status, notes, paymentDetails] = useWatch({
+    control: methods.control,
+    name: ['invoiceNumber', 'lineItems', 'discountType', 'discountValue', 'vatEnabled', 'vatRate', 'clientId', 'clientSnapshot', 'issueDate', 'dueDate', 'status', 'notes', 'paymentDetails'],
   });
+  const totals = calculateTotals({
+    lineItems: lineItems ?? [],
+    discountType: discountType ?? null,
+    discountValue: discountValue ?? 0,
+    vatEnabled: vatEnabled ?? false,
+    vatRate: vatRate ?? 0.15,
+  });
+  const previewValues = { invoiceNumber, lineItems, discountType, discountValue, vatEnabled, vatRate, clientId, clientSnapshot, issueDate, dueDate, status, notes, paymentDetails };
 
   const onSubmit: SubmitHandler<InvoiceFormValues> = async (data) => {
     const computed = calculateTotals({
@@ -92,7 +97,7 @@ export function NewInvoicePage() {
       <PageBackground image={invoicesBg} position="center 35%">
         <TopBar
           title="New Invoice"
-          subtitle={methods.watch('invoiceNumber')}
+          subtitle={invoiceNumber}
           actions={
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Mobile tab switcher */}
@@ -134,7 +139,7 @@ export function NewInvoicePage() {
           </div>
           <div className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-4 sm:p-6 ${activeTab === 'form' ? 'hidden lg:block' : ''}`}>
             <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">Live Preview</p>
-            <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
+            <InvoicePreview invoice={{ ...previewValues, ...totals } as never} />
           </div>
         </div>
       </PageBackground>

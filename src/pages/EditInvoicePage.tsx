@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, FormProvider, type SubmitHandler, type Resolver } from 'react-hook-form';
+import { useForm, useWatch, FormProvider, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
@@ -44,14 +44,18 @@ export function EditInvoicePage() {
     }
   }, [invoice, methods]);
 
-  const formValues = methods.watch();
-  const totals = calculateTotals({
-    lineItems: formValues.lineItems ?? [],
-    discountType: formValues.discountType,
-    discountValue: formValues.discountValue ?? 0,
-    vatEnabled: formValues.vatEnabled,
-    vatRate: formValues.vatRate ?? 0.15,
+  const [invoiceNumber, lineItems, discountType, discountValue, vatEnabled, vatRate, clientId, clientSnapshot, issueDate, dueDate, status, notes, paymentDetails] = useWatch({
+    control: methods.control,
+    name: ['invoiceNumber', 'lineItems', 'discountType', 'discountValue', 'vatEnabled', 'vatRate', 'clientId', 'clientSnapshot', 'issueDate', 'dueDate', 'status', 'notes', 'paymentDetails'],
   });
+  const totals = calculateTotals({
+    lineItems: lineItems ?? [],
+    discountType: discountType ?? null,
+    discountValue: discountValue ?? 0,
+    vatEnabled: vatEnabled ?? false,
+    vatRate: vatRate ?? 0.15,
+  });
+  const previewValues = { invoiceNumber, lineItems, discountType, discountValue, vatEnabled, vatRate, clientId, clientSnapshot, issueDate, dueDate, status, notes, paymentDetails };
 
   const onSubmit: SubmitHandler<InvoiceFormValues> = async (data) => {
     if (!id) return;
@@ -118,7 +122,7 @@ export function EditInvoicePage() {
           </div>
           <div className={`flex-1 bg-brand-dark/60 border-l border-brand-border overflow-y-auto p-4 sm:p-6 ${activeTab === 'form' ? 'hidden lg:block' : ''}`}>
             <p className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-3">Live Preview</p>
-            <InvoicePreview invoice={{ ...formValues, ...totals } as never} />
+            <InvoicePreview invoice={{ ...previewValues, ...totals } as never} />
           </div>
         </div>
       </PageBackground>
