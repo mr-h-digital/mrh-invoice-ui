@@ -5,6 +5,17 @@ import { v4 as uuid } from 'uuid';
 import type { InvoiceFormValues } from '../../schemas/invoiceSchema';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+// Isolated component — only this re-renders when amount changes, not the whole Row
+function AmountDisplay({ index }: { index: number }) {
+  const { control } = useFormContext<InvoiceFormValues>();
+  const amount = useWatch({ control, name: `lineItems.${index}.amount` });
+  return (
+    <div className="bg-brand-dark/50 border border-brand-border rounded-lg px-3 py-2.5 text-sm font-mono text-right text-brand-white">
+      {formatCurrency(Number(amount) || 0)}
+    </div>
+  );
+}
+
 interface RowProps {
   index: number;
   onRemove: (index: number) => void;
@@ -16,25 +27,22 @@ interface RowProps {
 }
 
 function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast }: RowProps) {
-  const { register, setValue, control } = useFormContext<InvoiceFormValues>();
-
-  const quantity  = useWatch({ control, name: `lineItems.${index}.quantity` });
-  const unitPrice = useWatch({ control, name: `lineItems.${index}.unitPrice` });
-  const amount    = (Number(quantity) || 0) * (Number(unitPrice) || 0);
-
-  useEffect(() => {
-    setValue(`lineItems.${index}.amount`, amount, { shouldDirty: true });
-  }, [amount, index, setValue]);
+  const { register, setValue, getValues } = useFormContext<InvoiceFormValues>();
 
   useEffect(() => {
     setValue(`lineItems.${index}.sortOrder`, index, { shouldDirty: true });
   }, [index, setValue]);
 
-  // Single layout — each input rendered exactly once.
-  // Tailwind grid collapses to stacked on mobile via grid-cols-1.
+  // Called on every qty/unitPrice change — updates amount without causing a Row re-render
+  const updateAmount = () => {
+    const qty   = Number(getValues(`lineItems.${index}.quantity`))  || 0;
+    const price = Number(getValues(`lineItems.${index}.unitPrice`)) || 0;
+    setValue(`lineItems.${index}.amount`, qty * price, { shouldDirty: true });
+  };
+
   return (
     <div className="py-3 border-b border-brand-border last:border-0">
-      {/* Name + description — full width on all breakpoints */}
+      {/* Name + description */}
       <div className="flex flex-col gap-1 mb-2">
         <input
           {...register(`lineItems.${index}.name`)}
@@ -48,12 +56,12 @@ function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast
         />
       </div>
 
-      {/* Qty / Unit Price / Amount / Actions row */}
+      {/* Qty / Unit Price / Amount / Actions */}
       <div className="grid grid-cols-[1fr_1fr_1fr_auto] sm:grid-cols-[72px_120px_120px_auto] gap-2 items-center">
         <div>
           <label className="field-label text-[10px]">Qty</label>
           <input
-            {...register(`lineItems.${index}.quantity`, { valueAsNumber: true })}
+            {...register(`lineItems.${index}.quantity`, { valueAsNumber: true, onChange: updateAmount })}
             type="number" min="0" step="0.01" placeholder="1"
             className="input-field text-sm text-right"
           />
@@ -61,19 +69,16 @@ function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast
         <div>
           <label className="field-label text-[10px]">Unit Price</label>
           <input
-            {...register(`lineItems.${index}.unitPrice`, { valueAsNumber: true })}
+            {...register(`lineItems.${index}.unitPrice`, { valueAsNumber: true, onChange: updateAmount })}
             type="number" min="0" step="0.01" placeholder="0.00"
             className="input-field text-sm text-right"
           />
         </div>
         <div>
           <label className="field-label text-[10px]">Amount</label>
-          <div className="bg-brand-dark/50 border border-brand-border rounded-lg px-3 py-2.5 text-sm font-mono text-right text-brand-white">
-            {formatCurrency(amount)}
-          </div>
+          <AmountDisplay index={index} />
         </div>
 
-        {/* Reorder + delete */}
         <div className="flex flex-col items-center gap-1 pt-4">
           <button
             type="button"
@@ -115,7 +120,6 @@ export function LineItemsTable() {
 
   return (
     <div>
-      {/* Column headers — desktop only */}
       <div className="hidden sm:grid grid-cols-[1fr_72px_120px_120px_auto] gap-2 pb-2 border-b border-brand-border mb-1">
         <span className="text-xs font-mono text-brand-muted uppercase tracking-wider">Description</span>
         <span className="text-xs font-mono text-brand-muted uppercase tracking-wider text-right">Qty</span>
