@@ -1,43 +1,27 @@
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 import { useEffect } from 'react';
-import { Plus, GripVertical, Trash2 } from 'lucide-react';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
 import type { InvoiceFormValues } from '../../schemas/invoiceSchema';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-interface SortableRowProps {
-  id: string;
+interface RowProps {
   index: number;
   onRemove: (index: number) => void;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
   canRemove: boolean;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
-function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
+function Row({ index, onRemove, onMoveUp, onMoveDown, canRemove, isFirst, isLast }: RowProps) {
   const { register, setValue, control } = useFormContext<InvoiceFormValues>();
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
 
   const quantity  = useWatch({ control, name: `lineItems.${index}.quantity` });
   const unitPrice = useWatch({ control, name: `lineItems.${index}.unitPrice` });
   const amount    = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
-  // Sync computed amount and sortOrder — inside useEffect so it never fires during render
   useEffect(() => {
     setValue(`lineItems.${index}.amount`, amount, { shouldDirty: true });
   }, [amount, index, setValue]);
@@ -46,25 +30,31 @@ function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
     setValue(`lineItems.${index}.sortOrder`, index, { shouldDirty: true });
   }, [index, setValue]);
 
-  const style = { transform: CSS.Transform.toString(transform), transition };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="py-3 border-b border-brand-border last:border-0"
-    >
+    <div className="py-3 border-b border-brand-border last:border-0">
       {/* Desktop row */}
       <div className="hidden sm:grid grid-cols-[auto_1fr_72px_100px_100px_auto] gap-2 items-start">
-        <button
-          type="button"
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder"
-          className="mt-2 p-1 text-brand-muted hover:text-brand-text cursor-grab active:cursor-grabbing touch-none"
-        >
-          <GripVertical size={16} />
-        </button>
+        {/* Reorder buttons */}
+        <div className="flex flex-col gap-0.5 mt-1.5">
+          <button
+            type="button"
+            onClick={() => onMoveUp(index)}
+            disabled={isFirst}
+            aria-label="Move up"
+            className="p-0.5 text-brand-muted hover:text-brand-text transition-colors disabled:opacity-20"
+          >
+            <ChevronUp size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMoveDown(index)}
+            disabled={isLast}
+            aria-label="Move down"
+            className="p-0.5 text-brand-muted hover:text-brand-text transition-colors disabled:opacity-20"
+          >
+            <ChevronDown size={14} />
+          </button>
+        </div>
 
         <div className="space-y-1">
           <input
@@ -140,15 +130,35 @@ function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
             </div>
           </div>
         </div>
-        {canRemove && (
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors self-start py-1"
-          >
-            <Trash2 size={13} /> Remove item
-          </button>
-        )}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => onMoveUp(index)}
+              disabled={isFirst}
+              className="p-1.5 text-brand-muted hover:text-brand-text transition-colors disabled:opacity-20"
+            >
+              <ChevronUp size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onMoveDown(index)}
+              disabled={isLast}
+              className="p-1.5 text-brand-muted hover:text-brand-text transition-colors disabled:opacity-20"
+            >
+              <ChevronDown size={14} />
+            </button>
+          </div>
+          {canRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors py-1"
+            >
+              <Trash2 size={13} /> Remove
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -157,22 +167,6 @@ function SortableRow({ id, index, onRemove, canRemove }: SortableRowProps) {
 export function LineItemsTable() {
   const { control } = useFormContext<InvoiceFormValues>();
   const { fields, append, remove, move } = useFieldArray({ control, name: 'lineItems' });
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      move(
-        fields.findIndex((f) => f.id === active.id),
-        fields.findIndex((f) => f.id === over.id)
-      );
-    }
-  }
 
   return (
     <div>
@@ -186,19 +180,18 @@ export function LineItemsTable() {
         <div className="w-6" />
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
-          {fields.map((field, index) => (
-            <SortableRow
-              key={field.id}
-              id={field.id}
-              index={index}
-              onRemove={remove}
-              canRemove={fields.length > 1}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+      {fields.map((field, index) => (
+        <Row
+          key={field.id}
+          index={index}
+          onRemove={remove}
+          onMoveUp={(i) => move(i, i - 1)}
+          onMoveDown={(i) => move(i, i + 1)}
+          canRemove={fields.length > 1}
+          isFirst={index === 0}
+          isLast={index === fields.length - 1}
+        />
+      ))}
 
       <button
         type="button"
