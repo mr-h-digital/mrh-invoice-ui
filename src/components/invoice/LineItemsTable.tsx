@@ -158,7 +158,9 @@ export function LineItemsTable() {
   const { fields, append, remove, move } = useFieldArray({ control, name: 'lineItems' });
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
